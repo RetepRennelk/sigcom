@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def generate_bits(N_bits):
     '''
     [Syntax]
@@ -12,7 +13,7 @@ def generate_bits(N_bits):
     return np.random.randint(0, 2, N_bits)
 
 
-def map_bits_to_int(bits, ldM):
+def _map_bits_to_int(bits, ldM):
     '''
     [Syntax]
     map_bits_to_int(bits, ldM)
@@ -20,13 +21,23 @@ def map_bits_to_int(bits, ldM):
     N_bits = len(bits)
     assert N_bits % ldM == 0
     N = int(N_bits / ldM)
-    ids = np.zeros(N)
+    ids = np.zeros(N, dtype=np.int)
     for k in np.arange(N):
         id = 0
         for m in np.arange(ldM):
             id += bits[k*ldM+m]*2**(ldM-1-m)
         ids[k] = id
     return ids
+
+
+def map_bits_to_symbol_alphabet(bits, alphabet):
+    '''
+    [Syntax]
+    tx = map_bits_to_symbol_alphabet(bits, alphabet):
+    '''
+    M = len(alphabet)
+    tx = alphabet[_map_bits_to_int(bits, int(np.log2(M)))]
+    return tx
 
 
 def pam_alphabet(M):
@@ -68,6 +79,11 @@ def plot_constellation(c, marker):
     plt.axis('square')
     plt.grid()
     plt.show()
+
+
+def make_noise(N):
+    return 1/np.sqrt(2)*(np.random.randn(N) + 1j * np.random.randn(N))
+
 
 if __name__ == "__main__":
     z = generate_bits(10)
