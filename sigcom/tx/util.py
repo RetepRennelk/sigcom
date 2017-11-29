@@ -81,10 +81,6 @@ def plot_constellation(c, marker):
     plt.show()
 
 
-def make_noise(N):
-    return 1/np.sqrt(2)*(np.random.randn(N) + 1j * np.random.randn(N))
-
-
 if __name__ == "__main__":
     z = generate_bits(10)
     pass

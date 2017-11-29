@@ -1,3 +1,4 @@
 /sigcom/utilities.py~
 pycache
 *.py~
+*__pycache__*
