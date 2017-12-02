@@ -15,7 +15,7 @@ def _max_star(a, b):
 
 
 @njit
-def demap(rx, qam, SNR):
+def demap(rx, qam, SNR, La=np.array([])):
     N_cells = len(rx)
     M = len(qam)
     ldM = int(np.log2(M))
@@ -25,6 +25,10 @@ def demap(rx, qam, SNR):
         D = np.zeros(M)
         for i in range(M):
             D[i] = -SNR*np.abs(rx[k]-qam[i])**2
+            if len(La) > 0:
+                for m in range(ldM):
+                    bit = (i >> (ldM - 1 - m)) & 1
+                    D[i] -= bit*La[k*ldM+m]
         for m in range(ldM):
             num = den = np.float64(-np.inf)
             for i in range(M):
