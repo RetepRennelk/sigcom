@@ -1,7 +1,7 @@
 import numpy as np
-from tx.util import generate_bits, qam_alphabet, \
+from sigcom.tx.util import generate_bits, qam_alphabet, \
     map_bits_to_symbol_alphabet, plot_constellation
-from rx.util import make_noise, demap
+from sigcom.rx.util import make_noise, demap
 
 
 if __name__ == "__main__":
@@ -18,6 +18,6 @@ if __name__ == "__main__":
     noise = make_noise(int(N_bits/ldM))
     SNR = 10**(SNR_dB/10)
     rx = tx + noise / np.sqrt(SNR)
-    Llrs = demap(rx, qam, SNR)
+    Llrs = demap(rx, qam, SNR   )
 
     plot_constellation(rx, 'bo')
