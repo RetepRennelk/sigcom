@@ -47,7 +47,6 @@ def get_layerwise_pck(code, isParityPermuted):
     for layer in range(N_layers):
         pck = []
         for segment, ParityChecks in enumerate(code['pck']):
-            ParityChecks = np.array(ParityChecks)
             CurrentLayers = (ParityChecks - layer) % N_layers
             VerticalShifts = (ParityChecks[CurrentLayers == 0] - layer) / N_layers
             if len(VerticalShifts) > 0:
@@ -68,6 +67,10 @@ def get_layerwise_pck(code, isParityPermuted):
 
         if layer+1 < N_layers:
             diagOffsets[layer+1] = int(diagOffsets[layer] + len(pck))
+            
+    layerwise_pcks = np.array([np.array(x, dtype=np.int32) for x in layerwise_pcks])
+    diagOffsets = np.array(diagOffsets)
+    
     return layerwise_pcks, diagOffsets
     
 def layerwise_pcks_to_PCM(layerwise_pcks, code):
@@ -78,7 +81,6 @@ def layerwise_pcks_to_PCM(layerwise_pcks, code):
     rows = []
     row = 0
     for i, pck in enumerate(layerwise_pcks):
-        pck = np.array(pck)
         for m in range(code['nCyclicFactor']):
             x = pck[:,0] + (pck[:,1]+m) % code['nCyclicFactor']
             if i==0 and m==0:
@@ -90,3 +92,14 @@ def layerwise_pcks_to_PCM(layerwise_pcks, code):
     shape = (code['N']-code['K'], code['N'])
     PCM = csr_matrix((np.ones(len(rows)), (rows,cols)), shape=shape)
     return PCM
+
+if __name__ == '__main__':
+    from sigcom.coding.atsc import pck_long
+    code = pck_long.get_pck([8,15])
+    H = make_pck(code)
+    isParityPermuted = True
+    layerwise_pcks, diagOffsets = get_layerwise_pck(code, isParityPermuted)
+    PCM = layerwise_pcks_to_PCM(layerwise_pcks, code)
+    import matplotlib.pyplot as plt
+    plt.spy(PCM, markersize=.1)
+    plt.show()
