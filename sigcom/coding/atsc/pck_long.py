@@ -152,5 +152,7 @@ def get_pck(code_rate_id):
     elif code_rate_id == [13, 15]:
         assert False, 'Implement!'
     
-    return {'pck': np.array(pck), 'N': 64800, 'K': int(64800*code_rate_id[0]/code_rate_id[1]),
+    pck = np.array([np.array(x, dtype=np.int32) for x in pck])
+    
+    return {'pck': pck, 'N': 64800, 'K': int(64800*code_rate_id[0]/code_rate_id[1]),
              'code_rate_id': code_rate_id, 'nCyclicFactor': 360}
