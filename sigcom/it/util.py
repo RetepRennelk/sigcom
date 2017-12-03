@@ -1,6 +1,10 @@
 import numpy as np
 
+
 def getNoisePower(Ias):
+    '''
+    See bits_to_apriori(bits, Ia) how getNoisePower is put to use
+    '''
     Pas = []
     for Ia in np.atleast_1d(Ias):
         if Ia <= .3646:
@@ -14,8 +18,8 @@ def getNoisePower(Ias):
             c2 = -1.75017
             Pa = (-a2*np.log(b2*(1-Ia))-c2*Ia)**2
         Pas.append(Pa)
-
     return np.array(Pas) if len(Pas) > 1 else Pas[0]
+
 
 def getMutualInfo(Pas):
     Ias = []
@@ -35,8 +39,8 @@ def getMutualInfo(Pas):
             d2 = 0.0549608
             Ia = 1-np.exp(a2*nSigma**3+b2*nSigma**2+c2*nSigma+d2)
         Ias.append(Ia)
-        
     return np.array(Ias) if len(Ias) > 1 else Ias[0]
+
 
 def mutual_information_magic(Llrs, bits, ldM):
     MIs = []
@@ -46,12 +50,14 @@ def mutual_information_magic(Llrs, bits, ldM):
         MI = 1-np.mean(np.log2(1+np.exp(-(1-2*b)*L)))
         MIs.append(MI)
     return np.array(MIs) if ldM>1 else MIs[0]
+
     
 def bits_to_apriori(bits, Ia):
     noise = np.random.randn(len(bits))
     Pa = getNoisePower(Ia)
     Llrs = Pa/2*(1-2*bits) + np.sqrt(Pa)*noise
     return Llrs
+
 
 if __name__ == '__main__':
     from sigcom.tx.util import generate_bits
