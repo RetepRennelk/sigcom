@@ -74,8 +74,12 @@ def qam_alphabet(M):
     return qam
 
 
-def plot_constellation(c, marker):
+def plot_constellation(c, marker='bo'):
     plt.plot(c.real, c.imag, marker)
+    ldM = int(np.log2(len(c)))
+    for i in range(len(c)):
+        str = ''.join(['1' if i & (1 << m) else '0' for m in range(ldM-1, -1, -1)])
+        plt.text(c[i].real, c[i].imag, str)
     plt.axis('square')
     plt.grid()
     plt.show()
