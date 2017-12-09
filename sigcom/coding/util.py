@@ -1,6 +1,5 @@
 from scipy.sparse import csc_matrix, csr_matrix
 import numpy as np
-from collections import namedtuple
 
 
 class CodeParam():
@@ -112,8 +111,8 @@ def layerwise_pcks_to_PCM(layerwise_pcks, cp):
 
 
 if __name__ == '__main__':
-    from sigcom.coding.atsc import pck_long
-    codeParam = pck_long.get_pck([8, 15])
+    from sigcom.coding.atsc import code_param_long
+    codeParam = code_param_long.get([8, 15])
     H = make_pck(codeParam)
     isParityPermuted = True
     layerwise_pcks, diagOffsets = get_layerwise_pck(codeParam, isParityPermuted)
