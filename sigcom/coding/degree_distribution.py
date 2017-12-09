@@ -2,17 +2,19 @@ import numpy as np
 
 
 def degree_distribution(H):
+    N_edges = H.sum().sum()
+
     vns = np.squeeze(np.array(H.sum(axis=0), np.int32))
     vns_unique = np.unique(vns)
     vn_stats = []
     for vn in vns_unique:
-        vn_stats.append([vn, np.mean(vns == vn)])
+        vn_stats.append([vn, vn*np.sum(vns == vn)/N_edges])
 
     cns = np.squeeze(np.array(H.sum(axis=1), np.int32))
     cns_unique = np.unique(cns)
     cn_stats = []
     for cn in cns_unique:
-        cn_stats.append([cn, np.mean(cns == cn)])
+        cn_stats.append([cn, cn*np.sum(cns == cn)/N_edges])
     return vn_stats, cn_stats
 
 
