@@ -55,7 +55,7 @@ def get_parity_interleaver(K, N=64800, nCyclicFactor=360):
 
 def get_layerwise_pck(cp, isParityPermuted):
     '''
-    layerwise_pcks, diagOffsets = get_layerwise_pck(code, isParityPermuted)
+    layerwise_pcks, diagOffsets = get_layerwise_pck(cp, isParityPermuted)
     '''
     layerwise_pcks = []
     N_layers = int((cp.N-cp.K)/cp.nCyclicFactor)
@@ -91,7 +91,7 @@ def get_layerwise_pck(cp, isParityPermuted):
 
 def layerwise_pcks_to_PCM(layerwise_pcks, cp):
     '''
-    run 'layerwise_pcks, diagOffsets = get_layerwise_pck(code, isParityPermuted)'
+    run 'layerwise_pcks, diagOffsets = get_layerwise_pck(cp, isParityPermuted)'
     '''
     cols = []
     rows = []
@@ -111,12 +111,43 @@ def layerwise_pcks_to_PCM(layerwise_pcks, cp):
 
 
 if __name__ == '__main__':
-    from sigcom.coding.atsc import code_param_long
-    codeParam = code_param_long.get([8, 15])
-    H = make_pck(codeParam)
-    isParityPermuted = True
-    layerwise_pcks, diagOffsets = get_layerwise_pck(codeParam, isParityPermuted)
-    PCM = layerwise_pcks_to_PCM(layerwise_pcks, codeParam)
-    import matplotlib.pyplot as plt
-    plt.spy(PCM, markersize=.1)
-    plt.show()
+    if 1:
+        from sigcom.coding.atsc.code_param_short import get
+        from sigcom.coding.PCM import PCM
+        from scipy.sparse import vstack, csr_matrix
+
+        cp = get([8, 15])
+        pcm = PCM(cp)
+        bil = get_parity_interleaver(cp.K, cp.N)
+
+        isParityPermuted = True
+        H = pcm.make_layered(isParityPermuted)
+
+        rows, cols = _pck_to_sparse_rows_and_cols(cp)
+        H0 = csc_matrix((np.ones(len(rows)),(rows,cols)),shape=(cp.N-cp.K,cp.N))
+        H0_bil = H0[:, bil]
+        N_layers = int((cp.N-cp.K)/360)
+        H1 = H0_bil[0::N_layers, :]
+        for l in range(1, N_layers):
+            H1 = vstack((H1, H0_bil[l::N_layers, :]))
+        H1 = csr_matrix(H1)
+        for r in range(cp.N-cp.K):
+            a = np.nonzero(H[r,:])[1]
+            b = np.nonzero(H1[r,:])[1]
+            assert np.equal(a, b).all()
+
+        import matplotlib.pyplot as plt
+        plt.spy(H1, markersize=.1)
+
+        plt.show()
+
+    else:
+        from sigcom.coding.atsc import code_param_long
+        codeParam = code_param_long.get([8, 15])
+        H = make_pck(codeParam)
+        isParityPermuted = True
+        layerwise_pcks, diagOffsets = get_layerwise_pck(codeParam, isParityPermuted)
+        PCM = layerwise_pcks_to_PCM(layerwise_pcks, codeParam)
+        import matplotlib.pyplot as plt
+        plt.spy(PCM, markersize=.1)
+        plt.show()
