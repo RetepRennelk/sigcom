@@ -43,9 +43,9 @@ def peg_v0(M, N, dv, sw_rand):
     '''
     mtx = np.zeros((M, N), dtype=np.int32)
     for n in range(N):
-        v_sum = mtx.sum(axis=1)
-        m = np.argmin(v_sum)
-        mtx[m, n] = 1
+        nh = np.zeros(M)
+        idx = _find_cn(mtx, nh, sw_rand)
+        mtx[idx, n] = 1
         for d in range(1, dv):
             nh = _breadth_first_search(mtx, n)
             idx = _find_cn(mtx, nh, sw_rand)
