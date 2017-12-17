@@ -6,15 +6,15 @@ def degree_distribution(H):
 
     vns = np.squeeze(np.array(H.sum(axis=0), np.int32))
     vns_unique = np.unique(vns)
-    vn_stats = []
+    vn_stats = np.array([])
     for vn in vns_unique:
-        vn_stats.append([vn, vn*np.sum(vns == vn)/N_edges])
+        np.append((vn_stats, np.array([vn, vn*np.sum(vns == vn)/N_edges])))
 
     cns = np.squeeze(np.array(H.sum(axis=1), np.int32))
     cns_unique = np.unique(cns)
-    cn_stats = []
+    cn_stats = np.array([])
     for cn in cns_unique:
-        cn_stats.append([cn, cn*np.sum(cns == cn)/N_edges])
+        np.append((cn_stats, np.array([cn, cn*np.sum(cns == cn)/N_edges])))
     return vn_stats, cn_stats
 
 
