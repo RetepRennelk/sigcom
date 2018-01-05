@@ -46,6 +46,17 @@ class GF():
             b >>= 1
         return p
 
+    def cumprod(self, arr):
+        p = arr[0]
+        for el in arr[1, :]:
+            p = self.mul(p, el)
+        return p
+
+
+def bits_to_gf_symbols(bits, m):
+    weights = 2**np.arange(m)[::-1]
+    return bits.reshape(-1, m).dot(weights)
+
 
 if __name__ == '__main__':
     m = 3
