@@ -1,13 +1,15 @@
 import numpy as np
 
 
-def int_to_bits(ints, m):
+def int_to_bits(ints, bw):
     '''
+    Convert integers 'ints' to bits with bitwidth 'bw'
+
     Parameters:
     - ints: list of integers
-    - m:  bitwidth to which the integers are converted
+    - bw:  bitwidth to which the integers are converted
     '''
-    l = [((i >> m-1-j)) & 1 for i in ints for j in range(m)]
+    l = [((i >> bw-1-j)) & 1 for i in ints for j in range(bw)]
     return np.array(l, dtype=np.int)
 
 
