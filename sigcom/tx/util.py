@@ -16,18 +16,10 @@ def generate_bits(N_bits):
 def _map_bits_to_int(bits, ldM):
     '''
     [Syntax]
-    map_bits_to_int(bits, ldM)
+    _map_bits_to_int(bits, ldM)
     '''
-    N_bits = len(bits)
-    assert N_bits % ldM == 0
-    N = int(N_bits / ldM)
-    ids = np.zeros(N, dtype=np.int)
-    for k in np.arange(N):
-        id = 0
-        for m in np.arange(ldM):
-            id += bits[k*ldM+m]*2**(ldM-1-m)
-        ids[k] = id
-    return ids
+    weights = 2**np.arange(ldM)[::-1]
+    return bits.reshape(-1, ldM).dot(weights)
 
 
 def map_bits_to_symbol_alphabet(bits, alphabet):
