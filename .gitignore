@@ -2,3 +2,4 @@
 pycache
 *.py~
 *__pycache__*
+*.py#

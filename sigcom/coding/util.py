@@ -4,6 +4,11 @@ import numpy as np
 
 class CodeParam():
     def __init__(self, pck, N, code_rate_id, nCyclicFactor):
+        '''
+        Parameters
+        - pck: Parity check edges as defined in DVB-T2 or ATSC
+               in a column oriented fashion
+        '''
         self.N = N
         self.pck = np.array([np.array(x, dtype=np.int32) for x in pck])
         self.CR = code_rate_id[0] / code_rate_id[1]
