@@ -130,6 +130,30 @@ class BasePcks():
         return pcm_columnwise(self.columnwise_pcks, self.N-self.K, self.K)
 
 
+class BasePcksLifted():
+    def __init__(self, basePcks, CF):
+        self.basePcks = basePcks
+        self.CF = CF
+        self.layerwise_pcks_lifted = self.lift(basePcks.layerwise_pcks)
+        self.columnwise_pcks_lifted = self.lift(basePcks.columnwise_pcks)
+
+    def lift(self, pcks):
+        pcks_lifted = []
+        for pck in pcks:
+            pcks_lifted.append([[p*self.CF, 0] for p in pck])
+        return pcks_lifted
+
+    def randomize_offsets(self):
+        col_pcks = self.columnwise_pcks_lifted
+        col_indices = np.zeros(self.basePcks.K, dtype=np.int)
+        for layer, pcks in enumerate(self.layerwise_pcks_lifted):
+            for pck in pcks:
+                offset = np.random.randint(self.CF)
+                pck[-1] = offset
+                col_idx = col_indices[pck[0]//self.CF]
+                col_pcks[pck[0]//self.CF][col_idx][-1] = offset
+                col_indices[pck[0]//self.CF] += 1
+
 class Pcks():
     '''
     Add parity part to the information part of the pck description.
@@ -164,6 +188,7 @@ class Pcks():
         N_rows = self.basePcks.N-self.basePcks.K
         N_cols = self.basePcks.N
         return pcm_columnwise(self.columnwise_pcks, N_rows, N_cols)
+
 
 class CodeParamUnlifted():
     def __init__(self, base_pck, N, code_rate_id):
