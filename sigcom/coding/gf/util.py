@@ -2,7 +2,9 @@
 Utilities for Galois Field computations
 '''
 
+from copy import deepcopy
 import numpy as np
+from scipy.sparse import csc_matrix
 
 # Dictionary of Primitive Polynomials
 # The lists contain the non-zero exponents of the PPs
@@ -56,6 +58,100 @@ class GF():
 def bits_to_gf_symbols(bits, m):
     weights = 2**np.arange(m)[::-1]
     return bits.reshape(-1, m).dot(weights)
+
+
+class BasePcks():
+    '''
+    Interface to unify handling of layerwise and columnwise
+    oriented parity check node description. Once BasePcks has
+    been instantiated with either layerwise or columnwise pcks,
+    both are simultaneosuly present in the instance of BasePcks.
+
+    This class is limited to the information part of the parity
+    check matrix. It explicitly excludes the parity part.
+
+    layerwise_pcks: row by row description of the parity check addresses
+    columnwise_pcks: column by column description of the parity check addresses
+    '''
+    def __init__(self, pcks, orientation, N, K):
+        self.N = N
+        self.K = K
+        if orientation == 'layerwise':
+            self.layerwise_pcks = deepcopy(pcks)
+            self.columnwise_pcks = self.layer_to_column_pcks()
+        elif orientation == 'columnwise':
+            self.columnwise_pcks = deepcopy(pcks)
+            self.layerwise_pcks = self.column_to_layer_pcks()
+        else:
+            assert False, 'Unknown orientation: ' + orientation
+
+    def layer_to_column_pcks(self):
+        col_pcks = [[] for i in range(self.K)]
+        for layer, pck in enumerate(self.layerwise_pcks):
+            for p in pck:
+                if p < self.K:
+                    col_pcks[p].append(layer)
+        return col_pcks
+
+    def column_to_layer_pcks(self):
+        layerwise_pcks = [[] for i in range(self.N-self.K)]
+        for col, pck in enumerate(self.columnwise_pcks):
+            if col < self.K:
+                for p in pck:
+                    layerwise_pcks[p].append(col)
+        return layerwise_pcks
+
+
+class CodeParamUnlifted():
+    def __init__(self, base_pck, N, code_rate_id):
+        self.N = N
+        self.CR = code_rate_id[0] / code_rate_id[1]
+        self.K = int(N * self.CR)
+        self.code_rate_id = code_rate_id
+        self.base_pck = base_pck
+        par_pck = self.add_parity_to_base_pck()
+        self.par_pck = np.array([np.array(x, dtype=np.int32) for x in par_pck])
+
+    def add_parity_to_base_pck(self):
+        par_pck = deepcopy(self.base_pck)
+        par_pck[0].extend([self.K])
+        for layer in range(1, self.N-self.K):
+            x = [self.K+layer, self.K+layer-1]
+            par_pck[layer].extend(x)
+        return par_pck
+
+    def par_pcm(self):
+        '''
+        Returns the parity check matrix with parity part
+        in Compressed Sparse Column (csc) format.
+        '''
+        rows = []
+        cols = []
+        for row, pck in enumerate(self.par_pck):
+            cols.extend(pck)
+            rows.extend([row]*len(pck))
+        shape = (self.N - self.K, self.N)
+        return csc_matrix((np.ones(len(rows)), (rows, cols)), shape=shape)
+
+    def base_pcm(self):
+        '''
+        Returns the base parity check matrix without parity part
+        in Compressed Sparse Column (csc) format.
+        '''
+        rows = []
+        cols = []
+        for row, pck in enumerate(self.base_pck):
+            cols.extend(pck)
+            rows.extend([row]*len(pck))
+        shape = (self.N - self.K, self.K)
+        return csc_matrix((np.ones(len(rows)), (rows, cols)), shape=shape)
+
+    @staticmethod
+    def test_instance():
+        base_pck = [[0, 2], [0, 3], [1, 2], [1, 3]]
+        N = 8
+        code_rate_id = [1, 2]
+        return CodeParamUnlifted(base_pck, N, code_rate_id)
 
 
 if __name__ == '__main__':
