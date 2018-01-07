@@ -4,7 +4,7 @@ Utilities for Galois Field computations
 
 from copy import deepcopy
 import numpy as np
-from scipy.sparse import csc_matrix
+from scipy.sparse import csc_matrix, csr_matrix
 
 # Dictionary of Primitive Polynomials
 # The lists contain the non-zero exponents of the PPs
@@ -60,6 +60,28 @@ def bits_to_gf_symbols(bits, m):
     return bits.reshape(-1, m).dot(weights)
 
 
+def pcm_layerwise(layerwise_pcks, N_rows, N_cols):
+    rows = []
+    cols = []
+    for row, pcks in enumerate(layerwise_pcks):
+        rows.extend([row]*len(pcks))
+        cols.extend(pcks)
+    shape = (N_rows, N_cols)
+    return csr_matrix((np.ones(len(rows)), (rows, cols)),
+                      shape=shape, dtype=np.int)
+
+
+def pcm_columnwise(columnwise_pcks, N_rows, N_cols):
+    cols = []
+    rows = []
+    for col, pcks in enumerate(columnwise_pcks):
+        cols.extend([col]*len(pcks))
+        rows.extend(pcks)
+    shape = (N_rows, N_cols)
+    return csc_matrix((np.ones(len(rows)), (rows, cols)),
+                      shape=shape, dtype=np.int)
+
+
 class BasePcks():
     '''
     Interface to unify handling of layerwise and columnwise
@@ -101,6 +123,47 @@ class BasePcks():
                     layerwise_pcks[p].append(col)
         return layerwise_pcks
 
+    def pcm_layerwise(self):
+        return pcm_layerwise(self.layerwise_pcks, self.N-self.K, self.K)
+
+    def pcm_columnwise(self):
+        return pcm_columnwise(self.columnwise_pcks, self.N-self.K, self.K)
+
+
+class Pcks():
+    '''
+    Add parity part to the information part of the pck description.
+    '''
+    def __init__(self, basePcks):
+        self.basePcks = basePcks
+        self.layerwise_pcks = deepcopy(basePcks.layerwise_pcks)
+        self.columnwise_pcks = deepcopy(basePcks.columnwise_pcks)
+        self.add_parity_to_layerwise_pcks()
+        self.add_parity_to_columnwise_pcks()
+
+    def add_parity_to_layerwise_pcks(self):
+        pcks = self.layerwise_pcks
+        pcks[0].extend([self.basePcks.K])
+        for layer in range(1, self.basePcks.N-self.basePcks.K):
+            x = [self.basePcks.K+layer, self.basePcks.K+layer-1]
+            pcks[layer].extend(x)
+
+    def add_parity_to_columnwise_pcks(self):
+        pcks = self.columnwise_pcks
+        for layer in range(self.basePcks.N-self.basePcks.K-1):
+            x = [layer, layer+1]
+            pcks.append(x)
+        pcks.append([self.basePcks.N-self.basePcks.K-1])
+
+    def pcm_layerwise(self):
+        N_rows = self.basePcks.N-self.basePcks.K
+        N_cols = self.basePcks.N
+        return pcm_layerwise(self.layerwise_pcks, N_rows, N_cols)
+
+    def pcm_columnwise(self):
+        N_rows = self.basePcks.N-self.basePcks.K
+        N_cols = self.basePcks.N
+        return pcm_columnwise(self.columnwise_pcks, N_rows, N_cols)
 
 class CodeParamUnlifted():
     def __init__(self, base_pck, N, code_rate_id):
