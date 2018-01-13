@@ -22,21 +22,26 @@ class Peg_X():
         return biadjacency_matrix(self.g, self.cn_nodes, self.vn_nodes)
 
     def run(self):
-        for col in range(self.N):
-            idx = self.find_cn(col, self.cn_nodes)
-            self.g.add_edge(idx, -(col+1))
+        for vn in self.vn_nodes:
+            idx = self.find_cn(vn, self.cn_nodes)
+            self.g.add_edge(idx, vn)
             for d in range(1, self.dv):
-                cn_cands = self.bfs(col)
-                idx = self.find_cn(col, cn_cands)
-                self.g.add_edge(idx, -(col+1))
+                cn_cands, ext_sw = self.bfs(vn)
+                if ext_sw and len(cn_cands) > 1:
+                    from ipdb import set_trace as bp
+                    pass # bp()
+                idx = self.find_cn(vn, cn_cands)
+                self.g.add_edge(idx, vn)
 
-    def find_cn(self, col, rows):
+    def find_cn(self, vn, rows):
         '''
         Find check-node with smallest degree
         '''
         h_sum = np.zeros(self.M)
-        for i in range(col):
-            h_sum[np.array(self.g[-(i+1)])-1] += 1
+        for v in self.vn_nodes:
+            if v == vn:
+                break
+            h_sum[np.array(self.g[v])-1] += 1
             # restrict candidates to rows
         h_sum = h_sum[rows-1]
         if self.sw_rand == 0:
@@ -46,8 +51,8 @@ class Peg_X():
             idx = np.random.choice(indices)
         return rows[idx]
 
-    def bfs(self, col):
-        l0 = np.array(list(self.g[-(col+1)]))
+    def bfs(self, vn):
+        l0 = np.array(list(self.g[vn]))
         l2 = np.array([], dtype=np.int32)
         while 1:
             l1 = np.array([])
@@ -58,17 +63,18 @@ class Peg_X():
             l2 = np.unique(l2)
             N0 = l0.size
             N1 = l2.size
-            if (N0 < self.M and N1 == self.M) or (N0 >= N1 and N0 < self.M):
+            ext_sw = N0 < self.M and N1 == self.M
+            if ext_sw or (N0 >= N1 and N0 < self.M):
                 break
             l0 = l2.copy()
         cn_cands = np.setdiff1d(self.cn_nodes, l0)
-        return cn_cands
+        return cn_cands, ext_sw
 
 
 if __name__ == '__main__':
-    M = 10
+    M = 4
     N = 10
-    dv = 3
-    peg_x = Peg_X(M, N, dv, sw_rand=1)
+    dv = 2
+    peg_x = Peg_X(M, N, dv, sw_rand=0)
     peg_x.run()
     print(peg_x.tosparse().todense())
