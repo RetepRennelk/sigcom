@@ -27,13 +27,10 @@ class Peg_X():
             self.g.add_edge(idx, vn)
             for d in range(1, self.dv):
                 cn_cands, ext_sw = self.bfs(vn)
-                if ext_sw and len(cn_cands) > 1:
-                    from ipdb import set_trace as bp
-                    pass # bp()
-                idx = self.find_cn(vn, cn_cands)
-                self.g.add_edge(idx, vn)
+                cn = self.find_cn(vn, cn_cands)
+                self.g.add_edge(cn, vn)
 
-    def find_cn(self, vn, rows):
+    def find_cn(self, vn, cns):
         '''
         Find check-node with smallest degree
         '''
@@ -42,14 +39,14 @@ class Peg_X():
             if v == vn:
                 break
             h_sum[np.array(self.g[v])-1] += 1
-            # restrict candidates to rows
-        h_sum = h_sum[rows-1]
+        # restrict candidates to rows
+        h_sum = h_sum[cns-1]
         if self.sw_rand == 0:
             idx = np.argmin(h_sum)
         else:
             indices = np.where(h_sum == np.min(h_sum))[0]
             idx = np.random.choice(indices)
-        return rows[idx]
+        return cns[idx]
 
     def bfs(self, vn):
         l0 = np.array(list(self.g[vn]))
