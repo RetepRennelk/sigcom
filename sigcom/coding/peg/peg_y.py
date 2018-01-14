@@ -35,7 +35,7 @@ class Peg_Y():
 
     def test_cycle(self, vn, cn_cands):
         '''
-        Add edge tentatively and check length of cycle being 
+        Add edge tentatively and check length of cycle being
         created. Choose the edge which creates the longest cycle.
         '''
         cycles = []
@@ -86,12 +86,13 @@ class Peg_Y():
     def cycles(self):
         vn_cycles = [nx.find_cycle(self.g, vn) for vn in self.vn_nodes]
         cn_cycles = [nx.find_cycle(self.g, cn) for cn in self.cn_nodes]
-        print('vn_cycles', vn_cycles)
-        print('cn_cycles', cn_cycles)
-        len_vn_cycles = [len(c) for c in vn_cycles]
-        len_cn_cycles = [len(c) for c in cn_cycles]
-        print('len_vn_cycles', len_vn_cycles)
-        print('len_cn_cycles', len_cn_cycles)
+        return vn_cycles, cn_cycles
+
+    def min_cycle(self):
+        vn_cycles, cn_cycles = self.cycles()
+        minimum_vn = np.min([len(i) for i in vn_cycles])
+        minimum_cn = np.min([len(i) for i in cn_cycles])
+        return np.min([minimum_vn, minimum_cn])
 
 
 if __name__ == '__main__':
@@ -101,4 +102,4 @@ if __name__ == '__main__':
     peg_y = Peg_Y(M, N, dv)
     peg_y.run()
     print(peg_y.tosparse().todense())
-    peg_y.cycles()
+    print(peg_y.min_cycle())
