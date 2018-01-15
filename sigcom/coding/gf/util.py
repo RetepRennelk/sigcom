@@ -129,7 +129,7 @@ class BasePcks():
     def pcm_columnwise(self):
         return pcm_columnwise(self.columnwise_pcks, self.N-self.K, self.K)
 
-
+        
 class BasePcksLifted():
     def __init__(self, basePcks, CF):
         self.basePcks = basePcks
@@ -144,16 +144,25 @@ class BasePcksLifted():
         return pcks_lifted
 
     def randomize_offsets(self):
-        col_pcks = self.columnwise_pcks_lifted
-        col_indices = np.zeros(self.basePcks.K, dtype=np.int)
+        '''
+        Randomize the layerwise pck and ensure that the columnwise pck
+        is consistent
+        '''
         for layer, pcks in enumerate(self.layerwise_pcks_lifted):
             for pck in pcks:
-                offset = np.random.randint(self.CF)
-                pck[-1] = offset
-                col_idx = col_indices[pck[0]//self.CF]
-                col_pcks[pck[0]//self.CF][col_idx][-1] = offset
-                col_indices[pck[0]//self.CF] += 1
+                diag_shift = np.random.randint(self.CF)
+                pck[-1] = diag_shift
+                
+        col_pcks = self.columnwise_pcks_lifted
+        col_offsets = np.zeros(self.basePcks.K, dtype=np.int)
+        for pck in [p for pcks in self.layerwise_pcks_lifted for p in pcks]:
+            diag_shift = pck[-1]
+            col_idx = pck[0]//self.CF
+            col_offset = col_offsets[col_idx]
+            col_pcks[col_idx][col_offset][-1] = diag_shift
+            col_offsets[col_idx] += 1
 
+                
 class Pcks():
     '''
     Add parity part to the information part of the pck description.
