@@ -55,6 +55,9 @@ def gauss_hermite_weights_abscissas(n=32):
 
 
 class MI_ten_brink():
+    def __int__(self, N):
+        self.N = N
+
     @staticmethod
     def getMutualInfo(P):
         def helper(P):
@@ -90,6 +93,13 @@ class MI_ten_brink():
                 Pa = (-a*np.log(b*(1-Ia)) - c*Ia)**2
             return Pa
         return np.array([helper(ia) for ia in np.atleast_1d(Ia)])
+
+    def update(self):
+        self.noise = np.random.randn(self.N)
+
+    def add_apriori_info(self, bits, Ia):
+        Pa = MI_ten_brink.getNoisePower(Ia)
+        return Pa/2*(1-2*bits) + np.sqrt(Pa)*self.noise
 
 
 class MI_Gauss_Hermite():
