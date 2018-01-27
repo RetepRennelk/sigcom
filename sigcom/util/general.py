@@ -54,6 +54,22 @@ def gauss_hermite_weights_abscissas(n=32):
     return wi, xi
 
 
+class MI_Gauss_Hermite():
+    '''
+    Mutual Information for a Binary AWGN Channel
+    '''
+    def __init__(self, n=32):
+        self.n = n
+        wi, xi = gauss_hermite_weights_abscissas(n)
+
+        def func_helper(t, x, P):
+            return 1/np.sqrt(np.pi)*np.log2(1+np.exp(-2*x*(np.sqrt(2*P)*t+x)/P))
+        self.func = lambda P: 1-.5*(func_helper(xi, +1, P)+func_helper(xi, -1, P)).dot(wi)
+
+    def get(self, P):
+        return np.array([self.func(p) for p in np.atleast_1d(P)])
+
+
 if __name__ == '__main__':
     ints = range(5)
     bits = ints_to_bits(ints, 3)
