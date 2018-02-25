@@ -49,9 +49,9 @@ def mutual_information_magic(Llrs, bits, ldM):
         L = Llrs[m::ldM]
         MI = 1-np.mean(np.log2(1+np.exp(-(1-2*b)*L)))
         MIs.append(MI)
-    return np.array(MIs) if ldM>1 else MIs[0]
+    return np.array(MIs) if ldM > 1 else MIs[0]
 
-    
+
 def bits_to_apriori(bits, Ia):
     noise = np.random.randn(len(bits))
     Pa = getNoisePower(Ia)
