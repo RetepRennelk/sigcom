@@ -20,6 +20,8 @@ class SP1p4():
         self.tx1 = map_bits_to_symbol_alphabet(self.bits1, self.X1)
         self.phase = exp(1j*2*pi*rand(self.N_cells))
 
-    def generate(self, P0, P1):
-        self.tx = sqrt(P0)*self.tx0 + sqrt(P1)*self.tx1*self.phase
-
+    def generate(self, Ps):
+        '''
+        Powers : Ps =  [P0, P1]
+        '''
+        self.tx = sqrt(Ps[0])*self.tx0 + sqrt(Ps[1])*self.tx1*self.phase
