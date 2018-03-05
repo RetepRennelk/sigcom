@@ -5,12 +5,12 @@ def degree_distribution_edge_view(H):
     N_edges = H.sum().sum()
 
     vns = np.squeeze(np.array(H.sum(axis=0), np.int32))
-    vns_unique = np.unique(vns)
+    vns_unique = np.unique(vns)[::-1]
     vn_stats = [np.array([vn, vn*np.sum(vns == vn)/N_edges])
                 for vn in vns_unique]
 
     cns = np.squeeze(np.array(H.sum(axis=1), np.int32))
-    cns_unique = np.unique(cns)
+    cns_unique = np.unique(cns)[::-1]
     cn_stats = [np.array([cn, cn*np.sum(cns == cn)/N_edges])
                 for cn in cns_unique]
 
@@ -19,12 +19,12 @@ def degree_distribution_edge_view(H):
 
 def degree_distribution_node_view(H):
     vns = np.squeeze(np.array(H.sum(axis=0), np.int32))
-    vns_unique = np.unique(vns)
+    vns_unique = np.unique(vns)[::-1]
     vn_stats = [np.array([vn, np.mean(vns == vn)])
                 for vn in vns_unique]
 
     cns = np.squeeze(np.array(H.sum(axis=1), np.int32))
-    cns_unique = np.unique(cns)
+    cns_unique = np.unique(cns)[::-1]
     cn_stats = [np.array([cn, np.mean(cns == cn)])
                 for cn in cns_unique]
 
