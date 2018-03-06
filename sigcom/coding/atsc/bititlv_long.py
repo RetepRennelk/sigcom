@@ -1,8 +1,11 @@
 '''
-Source of the bil patterns: http://www.atsc.org/wp-content/uploads/2016/10/A322-2016-Physical-Layer-Protocol.pdf
+Source of the bil patterns:
+
+http://www.atsc.org/wp-content/uploads/2016/10/A322-2016-Physical-Layer-Protocol.pdf
 '''
 
 import numpy as np
+
 
 def _gil_to_bil(gil, M, N_ldpc=64800, nCyclicFactor=360):
     gil = np.array(gil)
@@ -12,16 +15,16 @@ def _gil_to_bil(gil, M, N_ldpc=64800, nCyclicFactor=360):
     if M == 256:
         Nr1 = 7920
         Nr2 = 180
-        v1 = np.arange(Nr1*8).reshape(8,-1).T.reshape(-1)
-        v2 = np.arange(Nr2*8).reshape(8,-1).T.reshape(-1) + Nr1*8
+        v1 = np.arange(Nr1*8).reshape(8, -1).T.reshape(-1)
+        v2 = np.arange(Nr2*8).reshape(8, -1).T.reshape(-1) + Nr1*8
         vBlockPerm = np.append(v1, v2)
     else:
-        vBlockPerm = np.arange(N_ldpc).reshape(ldM,-1).T.reshape(-1)
+        vBlockPerm = np.arange(N_ldpc).reshape(ldM, -1).T.reshape(-1)
     return groupWiseInterleaver[vBlockPerm]
 
 
 def bititlv_long(M, code_rate_id):
-    if M==4:
+    if M == 4:
         if code_rate_id == [2, 15]:
             assert False, 'Implement!'
         elif code_rate_id == [3, 15]:
@@ -43,11 +46,11 @@ def bititlv_long(M, code_rate_id):
         elif code_rate_id == [11, 15]:
             assert False, 'Implement!'
         elif code_rate_id == [12, 15]:
-            assert False, 'Implement!'        
+            assert False, 'Implement!'
         elif code_rate_id == [13, 15]:
             assert False, 'Implement!'
     else:
         assert False, 'Implement!'
-        
+
     bil = _gil_to_bil(gil, M)
     return bil
