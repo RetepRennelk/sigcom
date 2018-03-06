@@ -1,6 +1,7 @@
 import numpy as np
 from collections import namedtuple
 
+
 def degree_distribution_edge_view(H):
     N_edges = H.sum().sum()
 
@@ -15,9 +16,7 @@ def degree_distribution_edge_view(H):
                 for cn in cns_unique]
 
     edge_stats = namedtuple('edge_stats', 'vn cn')
-    edge_stats.vn = np.array(vn_stats)
-    edge_stats.cn = np.array(cn_stats)
-    return edge_stats
+    return edge_stats(np.array(vn_stats), np.array(cn_stats))
 
 
 def degree_distribution_node_view(H):
@@ -32,9 +31,7 @@ def degree_distribution_node_view(H):
                 for cn in cns_unique]
 
     node_stats = namedtuple('node_stats', 'vn cn')
-    node_stats.vn = np.array(vn_stats)
-    node_stats.cn = np.array(cn_stats)
-    return node_stats
+    return node_stats(np.array(vn_stats), np.array(cn_stats))
 
 
 def edge_to_node_view(edge_stats):
@@ -47,9 +44,7 @@ def edge_to_node_view(edge_stats):
     cn_node_stats = np.vstack((edge_stats.cn[:, 0], cn_node_stats)).T
 
     node_stats = namedtuple('node_stats', 'vn cn')
-    node_stats.vn = vn_node_stats
-    node_stats.cn = cn_node_stats
-    return node_stats
+    return node_stats(vn_node_stats, cn_node_stats)
 
 
 def node_to_edge_view(node_stats):
@@ -62,9 +57,7 @@ def node_to_edge_view(node_stats):
     cn_edge_stats = np.vstack((node_stats.cn[:, 0], cn_edge_stats)).T
 
     edge_stats = namedtuple('edge_stats', 'vn cn')
-    edge_stats.vn = vn_edge_stats
-    edge_stats.cn = cn_edge_stats
-    return edge_stats
+    return edge_stats(vn_edge_stats, cn_edge_stats)
 
 
 if __name__ == '__main__':
