@@ -1,5 +1,5 @@
 import numpy as np
-
+from collections import namedtuple
 
 def degree_distribution_edge_view(H):
     N_edges = H.sum().sum()
@@ -14,7 +14,10 @@ def degree_distribution_edge_view(H):
     cn_stats = [np.array([cn, cn*np.sum(cns == cn)/N_edges])
                 for cn in cns_unique]
 
-    return np.array(vn_stats), np.array(cn_stats)
+    edge_stats = namedtuple('edge_stats', 'vn cn')
+    edge_stats.vn = np.array(vn_stats)
+    edge_stats.cn = np.array(cn_stats)
+    return edge_stats
 
 
 def degree_distribution_node_view(H):
@@ -28,31 +31,40 @@ def degree_distribution_node_view(H):
     cn_stats = [np.array([cn, np.mean(cns == cn)])
                 for cn in cns_unique]
 
-    return np.array(vn_stats), np.array(cn_stats)
+    node_stats = namedtuple('node_stats', 'vn cn')
+    node_stats.vn = np.array(vn_stats)
+    node_stats.cn = np.array(cn_stats)
+    return node_stats
 
 
-def edge_to_node_view(vn_edge_stats, cn_edge_stats):
-    vn_node_stats = vn_edge_stats[:, 1] / vn_edge_stats[:, 0]
+def edge_to_node_view(edge_stats):
+    vn_node_stats = edge_stats.vn[:, 1] / edge_stats.vn[:, 0]
     vn_node_stats = vn_node_stats/vn_node_stats.sum()
-    vn_node_stats = np.vstack((vn_edge_stats[:, 0], vn_node_stats)).T
+    vn_node_stats = np.vstack((edge_stats.vn[:, 0], vn_node_stats)).T
 
-    cn_node_stats = cn_edge_stats[:, 1] / cn_edge_stats[:, 0]
+    cn_node_stats = edge_stats.cn[:, 1] / edge_stats.cn[:, 0]
     cn_node_stats = cn_node_stats/cn_node_stats.sum()
-    cn_node_stats = np.vstack((cn_edge_stats[:, 0], cn_node_stats)).T
+    cn_node_stats = np.vstack((edge_stats.cn[:, 0], cn_node_stats)).T
 
-    return vn_node_stats, cn_node_stats
+    node_stats = namedtuple('node_stats', 'vn cn')
+    node_stats.vn = vn_node_stats
+    node_stats.cn = cn_node_stats
+    return node_stats
 
 
-def node_to_edge_view(vn_node_stats, cn_node_stats):
-    vn_edge_stats = vn_node_stats[:, 1] * vn_node_stats[:, 0]
+def node_to_edge_view(node_stats):
+    vn_edge_stats = node_stats.vn[:, 1] * node_stats.vn[:, 0]
     vn_edge_stats = vn_edge_stats/vn_edge_stats.sum()
-    vn_edge_stats = np.vstack((vn_node_stats[:, 0], vn_edge_stats)).T
+    vn_edge_stats = np.vstack((node_stats.vn[:, 0], vn_edge_stats)).T
 
-    cn_edge_stats = cn_node_stats[:, 1] * cn_node_stats[:, 0]
+    cn_edge_stats = node_stats.cn[:, 1] * node_stats.cn[:, 0]
     cn_edge_stats = cn_edge_stats/cn_edge_stats.sum()
-    cn_edge_stats = np.vstack((cn_node_stats[:, 0], cn_edge_stats)).T
+    cn_edge_stats = np.vstack((node_stats.cn[:, 0], cn_edge_stats)).T
 
-    return vn_edge_stats, cn_edge_stats
+    edge_stats = namedtuple('edge_stats', 'vn cn')
+    edge_stats.vn = vn_edge_stats
+    edge_stats.cn = cn_edge_stats
+    return edge_stats
 
 
 if __name__ == '__main__':
@@ -63,24 +75,24 @@ if __name__ == '__main__':
     pcm = PCM(cp)
 
     H = pcm.make_layered(True)
-    vn_edge_stats, cn_edge_stats = degree_distribution_edge_view(H)
-    vn_node_stats, cn_node_stats = degree_distribution_node_view(H)
-    
-    vn_node_stats2, cn_node_stats2 = edge_to_node_view(vn_edge_stats, cn_edge_stats)
-    vn_edge_stats2, cn_edge_stats2 = node_to_edge_view(vn_node_stats, cn_node_stats)
+    edge_stats = degree_distribution_edge_view(H)
+    node_stats = degree_distribution_node_view(H)
 
-    print('vn_edge_stats\n', vn_edge_stats)
+    node_stats2 = edge_to_node_view(edge_stats)
+    edge_stats2 = node_to_edge_view(node_stats)
+
+    print('edge_stats.vn\n', edge_stats.vn)
     print(' ')
-    print('cn_edge_stats\n', cn_edge_stats)
+    print('edge_stats.cn\n', edge_stats.cn)
     print(' ')
-    print('vn_node_stats\n', vn_node_stats)
+    print('node_stats.vn\n', node_stats.vn)
     print(' ')
-    print('cn_node_stats\n', cn_node_stats)
+    print('node_stats.cn\n', node_stats.cn)
     print('----------------------------------------')
-    print('vn_edge_stats2\n', vn_edge_stats - vn_edge_stats2)
+    print('edge_stats2.vn\n', edge_stats.vn - edge_stats2.vn)
     print(' ')
-    print('cn_edge_stats2\n', cn_edge_stats - cn_edge_stats2)
+    print('edge_stats2.cn\n', edge_stats.cn - edge_stats2.cn)
     print(' ')
-    print('vn_node_stats2\n', vn_node_stats - vn_node_stats2)
+    print('node_stats2.vn\n', node_stats.vn - node_stats2.vn)
     print(' ')
-    print('cn_node_stats2\n', cn_node_stats - cn_node_stats2)
+    print('node_stats2.cn\n', node_stats.cn - node_stats2.cn)
