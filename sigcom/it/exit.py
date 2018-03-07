@@ -5,6 +5,45 @@ from sigcom.coding.PCM import PCM
 from sigcom.coding.atsc.bititlv_long import bititlv_long
 from sigcom.coding.atsc.bititlv_short import bititlv_short
 from sigcom.coding.degree_distribution import degree_distribution_edge_view, degree_distribution_node_view
+from sigcom.it.util import bits_to_apriori
+from scipy.sparse import csr_matrix
+
+
+def fill_PCM_apriori(N, K, indptr, indices, codebits, Ia):
+    L = bits_to_apriori(codebits[indices], [Ia])
+    return csr_matrix((L, indices, indptr), shape=(N-K, N))
+
+def CN_exit_function(H, Ias):
+    edge_stats = degree_distribution_edge_view(H)
+    MIs = np.zeros(len(Ias))
+    for k, Ia in enumerate(Ias):
+        MI = 0
+        for stats in edge_stats.cn:
+            dc = stats[0]
+            prob = stats[1]
+            MI_temp = 1-getMutualInfo((dc-1)*getNoisePower([1-Ia]))[0]
+            MI += prob*MI_tmp
+        MIs[k] = MI
+    return MIs
+
+
+def demap_wrapper(fn, *args):
+    def demap_callback(L_apriori):
+        return fn(*args, L_apriori)
+    return demap_callback
+
+
+def VN_exit_function(H, Ias, codebits, demap_callback):
+    MIs = np.zeros(len(Ias))
+    N = H.shape[1]
+    K = N-H.shape[0]
+    for k, Ia in enumerate(Ias):
+        VN = fill_PCM_apriori(N, K, H.indptr, H.indices, codebits, Ia)
+        L_apri = VN.sum(axis=0).A1
+        Llrs = demap_callback(L_apri)
+        MI = mutual_information_magic(Llrs[H.indices]-VN-.data, codebits[H.indices], 1)
+        MIs[k] = MI
+    return MIs 
 
 
 class EXIT_mod_vn():
