@@ -59,6 +59,15 @@ def bits_to_apriori(bits, Ia):
     return Llrs
 
 
+def bits_to_multi_apriori(bits, Ias):
+    N_bits = len(bits)
+    noise = np.random.randn(N_bits)
+    ldM = len(Ias)
+    Llrs = np.zeros(N_bits)
+    for i, Ia in enumerate(Ias):
+        Pa = getNoisePower(Ia)
+        Llrs[i::ldM] = Pa/2*(1-2*bits[i::ldM])+np.sqrt(Pa)*noise[i::ldM]
+
 if __name__ == '__main__':
     from sigcom.tx.util import generate_bits
     N_bits = 100000
