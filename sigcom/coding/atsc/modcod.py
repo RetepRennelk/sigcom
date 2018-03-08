@@ -1,5 +1,7 @@
 class ModCod():
-    def __ini__(self, M, CR, N_lpdc):
+    def __init__(self, M, CR, N_ldpc):
         self.M = M
         self.CR = CR
         self.N_ldpc = N_ldpc
+
+        
