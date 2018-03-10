@@ -13,6 +13,7 @@ def fill_PCM_apriori(N, K, indptr, indices, codebits, Ia):
     L = bits_to_apriori(codebits[indices], [Ia])
     return csr_matrix((L, indices, indptr), shape=(N-K, N))
 
+
 def CN_exit_function(H, Ias):
     edge_stats = degree_distribution_edge_view(H)
     MIs = np.zeros(len(Ias))
@@ -43,7 +44,7 @@ def VN_exit_function(H, Ias, codebits, demap_callback):
         Llrs = demap_callback(L_apri)
         MI = mutual_information_magic(Llrs[H.indices]-VN-.data, codebits[H.indices], 1)
         MIs[k] = MI
-    return MIs 
+    return MIs
 
 
 class EXIT_mod_vn():
@@ -112,4 +113,3 @@ if __name__ == '__main__':
     CR = [8, 15]
     N_ldpc = 64800
     exit_mod_vn = EXIT_mod_vn(M, CR, N_ldpc)
-
