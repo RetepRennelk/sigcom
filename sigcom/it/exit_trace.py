@@ -44,14 +44,15 @@ class EXIT_trace():
             b = self.trace_x[-3]
             err_x = 2*(a-b)/(a+b)
             err = 0.5*(err_x**2+err_y**2)
-            if err < 1e-10 or self.trace_x[-1]>=1. or self.trace_y[-1]>=1.:
+            if err < 1e-10 or self.trace_x[-1] > .999 \
+               or self.trace_y[-1] > .999:
                 break
 
     def plot(self):
         plt.plot(self.x_down, self.y_down)
         plt.plot(self.x_up, self.y_up)
         plt.plot(self.trace_x, self.trace_y)
-        N_iter = len(self.trace_x)
+        N_iter = int((len(self.trace_x)-1)/2)
         x = self.trace_x[-1]
         y = self.trace_y[-1]
         str = 'N_iter={}, stuck at {:.3f},{:.3f}'.format(N_iter, x, y)
