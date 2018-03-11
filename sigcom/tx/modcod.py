@@ -79,3 +79,28 @@ class ModCodSP1p4_rs():
         m_tx0[:, int(N_cells/2):] *= np.sqrt(Ps[1])
         m_tx1[:, int(N_cells/2):] *= np.sqrt(Ps[0])
         self.tx = m_tx0.flatten() + m_tx1.flatten() * self.phase
+
+
+class LdpcEncAtsc():
+    def __init__(self, CR, N_ldpc):
+        self.CR = CR
+        self.N_ldpc = N_ldpc
+
+        if N_ldpc == 16200:
+            self.cp = code_param_short.get(CR)
+        else:
+            self.cp = code_param_long.get(CR)
+
+        self.pcm = PCM(self.cp)
+        self.H_enc = self.pcm.make()
+        self.H_dec = self.pcm.make_layered(True)
+
+        self.parintl = get_parity_interleaver(self.cp.K)
+
+    def generate(self, N_codewords):
+        self.bits = generate_bits(N_codewords*self.cp.K)
+        self.m_bits = self.bits.reshape(-1, self.cp.K).T
+        parity = np.int64(self.H_enc[:, :self.cp.K].dot(self.m_bits))
+        parity = np.cumsum(parity, axis=0) % 2
+        self.m_codebits = np.vstack((self.m_bits, parity))[self.parintl, :]
+        self.codebits = self.m_codebits.T.flatten()
