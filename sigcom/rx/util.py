@@ -6,6 +6,10 @@ def make_noise(N):
     return 1/np.sqrt(2)*(np.random.randn(N) + 1j * np.random.randn(N))
 
 
+def BEC_channel(N, p_err):
+    return np.asarray(np.random.rand(N) > p_err, np.int)
+
+
 @njit
 def _max_star(a, b):
     '''

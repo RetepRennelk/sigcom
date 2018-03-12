@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numba import njit
 
+
 @njit
 def generate_bits(N_bits):
     '''

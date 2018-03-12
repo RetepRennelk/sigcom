@@ -42,14 +42,26 @@ class EXIT_trace():
             err_x = 2*(self.trace_x[-2]-self.trace_y[-3])/(self.trace_y[-2]+self.trace_y[-3])
             err = .5*(err_x**2 + err_y**2)
             if err<1e-10 or self.trace_x[-1]>=.999 or self.trace_y[-1]>=.999: 
+            a = self.trace_y[-1]
+            b = self.trace_y[-2]
+            err_y = 2*(a-b)/(a+b)
+            a = self.trace_x[-2]
+            b = self.trace_x[-3]
+            err_x = 2*(a-b)/(a+b)
+            err = 0.5*(err_x**2+err_y**2)
+            if err < 1e-10 or self.trace_x[-1] > .999 \
+               or self.trace_y[-1] > .999:
                 break
 
     def plot(self):
         plt.plot(self.x_down, self.y_down)
         plt.plot(self.x_up, self.y_up)
         plt.plot(self.trace_x, self.trace_y)
-        N_iter = (len(self.trace_x)-1)/2
-        plt.title('N_iter = {}, stuck at {:.3f}, {:.3f}'.format(N_iter, self.trace_x[-1], self.trace_y[-1]))
+        N_iter = int((len(self.trace_x)-1)/2)
+        x = self.trace_x[-1]
+        y = self.trace_y[-1]
+        str = 'N_iter={}, stuck at {:.3f},{:.3f}'.format(N_iter, x, y)
+        plt.title(str)
         plt.grid()
         plt.show()
 
@@ -63,3 +75,13 @@ def MI_after_C2V(MI_in, C2Vs, CN_Ias):
     x1 = C2Vs[a[1]]
     MI_out = (MI_in-y1)/(y0-y1)*(x0-x1)+x1
     return MI_out
+
+
+if __name__ == '__main__':
+    x_down = np.linspace(0, 1, 11)
+    x_up = x_down
+    y_down = np.linspace(0, 1, 11)
+    y_up = np.linspace(.3, 1, 11)
+    exit_trace = EXIT_trace(x_down, y_down, x_up, y_up)
+    exit_trace.trace()
+    exit_trace.plot()
