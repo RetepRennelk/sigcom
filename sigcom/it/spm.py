@@ -147,11 +147,11 @@ class Average_MI_SP1p4():
         self.sp1p4.update()
         self.mi_sp1p4.update()
 
-    def run(self, P1p, P_noise):
-        self.sp1p4.generate([P1p, 2-P1p])
+    def run(self, Ps, P_noise):
+        self.sp1p4.generate(Ps)
         self.mi_sp1p4.run(P_noise)
         rr_p = self.mi_sp1p4.get_rate_region()
-        self.sp1p4.generate([2-P1p, P1p])
+        self.sp1p4.generate([Ps[1], Ps[0]])
         self.mi_sp1p4.run(P_noise)
         rr_pp = self.mi_sp1p4.get_rate_region()
         self.rate_region = RateRegion.average(rr_p, rr_pp)
