@@ -38,10 +38,6 @@ class EXIT_trace():
         for i in range(max_iterations):
             self._horizontal_step()
             self._vertical_step()
-            err_y = 2*(self.trace_y[-1]-self.trace_y[-2])/(self.trace_y[-1]+self.trace_y[-2])
-            err_x = 2*(self.trace_x[-2]-self.trace_y[-3])/(self.trace_y[-2]+self.trace_y[-3])
-            err = .5*(err_x**2 + err_y**2)
-            if err<1e-10 or self.trace_x[-1]>=.999 or self.trace_y[-1]>=.999: 
             a = self.trace_y[-1]
             b = self.trace_y[-2]
             err_y = 2*(a-b)/(a+b)
