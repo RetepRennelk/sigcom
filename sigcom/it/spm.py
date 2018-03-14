@@ -154,4 +154,6 @@ class Average_MI_SP1p4():
         self.sp1p4.generate([2-P1p, P1p])
         self.mi_sp1p4.run(P_noise)
         rr_pp = self.mi_sp1p4.get_rate_region()
+        self.MI0 = (rr_p.MI0 + rr_pp.MI0_1)/2
+        self.MI1 = (rr_p.MI1_0 + rr_pp.MI1)/2
         self.rate_region = RateRegion.average(rr_p, rr_pp)
