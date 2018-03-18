@@ -134,8 +134,9 @@ class Struct():
     print(struct.a)
     print(struct.b)
     '''
-    def __init__(self, **kwds):
-        self.__dict__.update(kwds)
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
 
 if __name__ == '__main__':
