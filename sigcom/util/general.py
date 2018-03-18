@@ -124,6 +124,20 @@ class MI_Gauss_Hermite():
         plt.show()
 
 
+class Struct():
+    '''
+    Convenience class to collect a bunch of named data.
+
+    Example:
+    struct = Struct(a=12, b=4)
+
+    print(struct.a)
+    print(struct.b)
+    '''
+    def __init__(self, **kwds):
+        self.__dict__.update(kwds)
+
+
 if __name__ == '__main__':
     ints = range(5)
     bits = ints_to_bits(ints, 3)
