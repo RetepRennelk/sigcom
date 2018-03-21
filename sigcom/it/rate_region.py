@@ -24,3 +24,14 @@ class RateRegion():
         MI1_0 = (rr1.MI1_0+rr2.MI1_0)/2
         MI_sum = (rr1.MI_sum+rr2.MI_sum)/2
         return RateRegion(MI0, MI1, MI0_1, MI1_0, MI_sum)
+
+
+def plot_rate_region(C, I, N):
+    plt.plot([0,np.log2(1+C/(I+N))],[np.log2(1+I/N)]*2,'b-')
+    plt.plot([np.log2(1+C/(I+N)), np.log2(1+C/N)], [np.log2(1+I/N), np.log2(1+I/(C+N))], 'b-')
+    plt.plot([np.log2(1+C/N)]*2, [np.log2(1+I/(C+N)),0], 'b-')
+    R_min = np.min([np.log2(1+C/N), np.log2(1+I/N)])
+    plt.plot([0,R_min],[0,R_min],'r--')
+    plt.title('C={:.2g}, I={:.2g}, N={:.2g}'.format(C,I,N))
+    plt.grid()
+    plt.show()
