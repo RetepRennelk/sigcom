@@ -1,5 +1,6 @@
 import numpy as np
 import functools
+import scipy.special
 
 
 def ints_to_bits(ints, bw):
@@ -138,6 +139,9 @@ class Struct():
         for key, value in kwargs.items():
             setattr(self, key, value)
 
+
+def qfunc(x):
+    return 0.5*scipy.special.erfc(x/np.sqrt(2))
 
 if __name__ == '__main__':
     ints = range(5)
