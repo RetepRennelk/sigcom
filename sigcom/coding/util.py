@@ -15,6 +15,8 @@ class CodeParam():
         self.K = int(N * self.CR)
         self.code_rate_id = code_rate_id
         self.nCyclicFactor = nCyclicFactor
+        self.layerwise_pcks, _  = get_layerwise_pck(self, True)
+        self.N_diags = get_num_diags(self.layerwise_pcks)
 
 
 def _pck_to_sparse_rows_and_cols(cp):
@@ -115,9 +117,9 @@ def layerwise_pcks_to_PCM(layerwise_pcks, cp):
     return PCM
 
 
-def get_num_diags(layerwise_pck):
+def get_num_diags(layerwise_pcks):
     num_diags = 0
-    for pck in layerwise_pck:
+    for pck in layerwise_pcks:
         num_diags += len(pck)
     return num_diags
 
