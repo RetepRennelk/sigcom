@@ -115,6 +115,13 @@ def layerwise_pcks_to_PCM(layerwise_pcks, cp):
     return PCM
 
 
+def get_num_diags(layerwise_pck):
+    num_diags = 0
+    for pck in layerwise_pck:
+        num_diags += len(pck)
+    return num_diags
+
+
 if __name__ == '__main__':
     if 1:
         from sigcom.coding.atsc.code_param_short import get
