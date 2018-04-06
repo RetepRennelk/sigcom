@@ -96,6 +96,26 @@ def get_layerwise_pck(cp, isParityPermuted):
     return layerwise_pcks, diagOffsets
 
 
+def layerwise_pcks_to_string(layerwise_pcks):
+    '''
+    Translate layerwise_pcks to string representation.
+    This is useful for CUDA-jitting.
+
+    Example:
+    [[[0, 1], [4, 3]], [[8, 2], [12, 1]]]
+    ->
+    '[[[0,1],[4,3]],[[8,2],[12,1]]]'
+    '''
+    s = '['
+    for pcks in layerwise_pcks:
+        s += '['
+        for pck in pcks:
+            s += '[{},{}],'.format(pck[0], pck[1])
+        s = s[:-1] + '],'
+    s_layerwise_pcks = s[:-1] + ']'
+    return s_layerwise_pcks
+
+
 def layerwise_pcks_to_PCM(layerwise_pcks, cp):
     '''
     run 'layerwise_pcks, diagOffsets = get_layerwise_pck(cp, isParityPermuted)'
