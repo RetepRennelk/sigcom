@@ -17,6 +17,7 @@ class CodeParam():
         self.nCyclicFactor = nCyclicFactor
         self.layerwise_pcks, _ = get_layerwise_pck(self, True)
         self.N_diags = get_num_diags(self.layerwise_pcks)
+        self.N_max_num_diags = get_max_num_diags(self.layerwise_pcks)
         self.llpcks = LinLayerwisePcks(self.layerwise_pcks)
 
 
@@ -143,6 +144,10 @@ def get_num_diags(layerwise_pcks):
     for pck in layerwise_pcks:
         num_diags += len(pck)
     return num_diags
+
+
+def get_max_num_diags(layerwise_pcks):
+    return np.max([len(pcks) for pcks in layerwise_pcks])
 
 
 class LinLayerwisePcks():
