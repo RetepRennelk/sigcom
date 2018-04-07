@@ -144,6 +144,30 @@ def get_num_diags(layerwise_pcks):
     return num_diags
 
 
+class LinLayerwisePcks():
+    '''
+    Put all pcks into a single list 'llpcks'.
+    Keep track of the original pcks with a second
+    list 'addr'
+
+    Example:
+    layerwise_pcks = [[[0,1],[2,3]],[[4,5],[6,7],[8,9]]]
+    llpcks = [0,1,2,3,4,5,6,7,8,9]
+    addr = [0,4,10]
+    '''
+    def __init__(self, layerwise_pcks):
+        addr = [0]
+        linearized_layerwise_pcks = []
+        for pcks in layerwise_pcks:
+            N_pcks = 0
+            for pck in pcks:
+                linearized_layerwise_pcks.extend(pck)
+                N_pcks += 2
+            addr.append(addr[-1]+N_pcks)
+        self.addr = addr
+        self.llpcks = linearized_layerwise_pcks
+
+
 if __name__ == '__main__':
     if 1:
         from sigcom.coding.atsc.code_param_short import get
