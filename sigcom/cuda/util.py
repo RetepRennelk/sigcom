@@ -1,4 +1,36 @@
+import math
 from numba import cuda
+
+
+@cuda.jit(device=True, inline=True)
+def _fmin(x, y):
+    if x < y:
+        return x
+    else:
+        return y
+
+
+@cuda.jit(device=True, inline=True)
+def _sign(x):
+    if x < 0:
+        return -1.0
+    else:
+        return 1.0
+
+
+@cuda.jit(device=True, inline=True)
+def _correctionTerm(x):
+    return math.log(1.0+math.exp(-x))
+
+
+@cuda.jit(device=True, inline=True)
+def _partialSoftXor(L1, L2):
+    L1_abs = math.fabs(L1)
+    L2_abs = math.fabs(L2)
+    rhs0 = _fmin(L1_abs, L2_abs)
+    rhs1 = _correctionTerm(L1_abs+L2_abs)
+    rhs2 = _correctionTerm(math.fabs(L1_abs-L2_abs))
+    return _sign(L1)*_sign(L2)*(rhs0+rhs1-rhs2)
 
 
 def print_attr_current_device():
