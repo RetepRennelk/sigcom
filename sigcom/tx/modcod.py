@@ -70,14 +70,14 @@ class ModCodSP1p4_rs():
         N_cells = len(self.tx0.tx)
         self.phase = np.exp(1j*2*np.pi*np.random.rand(N_cells))
 
-    def generate(self, Ps):
+    def generate(self, Powers0, Powers1):
         N_cells = self.tx0.N_fec_cells
         m_tx0 = self.tx0.tx.reshape(-1, N_cells).copy()
         m_tx1 = self.tx1.tx.reshape(-1, N_cells).copy()
-        m_tx0[:, :int(N_cells/2)] *= np.sqrt(Ps[0])
-        m_tx1[:, :int(N_cells/2)] *= np.sqrt(Ps[1])
-        m_tx0[:, int(N_cells/2):] *= np.sqrt(Ps[1])
-        m_tx1[:, int(N_cells/2):] *= np.sqrt(Ps[0])
+        m_tx0[:, :int(N_cells/2)] *= np.sqrt(Powers0[0])
+        m_tx0[:, int(N_cells/2):] *= np.sqrt(Powers0[1])
+        m_tx1[:, :int(N_cells/2)] *= np.sqrt(Powers1[0])
+        m_tx1[:, int(N_cells/2):] *= np.sqrt(Powers1[1])
         self.tx = m_tx0.flatten() + m_tx1.flatten() * self.phase
 
 

@@ -1,3 +1,7 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+
 class RateRegion():
     def __init__(self, MI0, MI1, MI0_1, MI1_0, MI_sum):
         self.MI0 = MI0
@@ -12,6 +16,15 @@ class RateRegion():
         print('MI0_1 = {:.3f}'.format(self.MI0_1))
         print('MI1_0 = {:.3f}'.format(self.MI1_0))
         print('MI_sum = {:.3f}'.format(self.MI_sum))
+
+    def plot(self, ax):
+        ax.plot([0, self.MI0], [self.MI1_0]*2,'b-')
+        ax.plot([self.MI0, self.MI0_1], [self.MI1_0,self.MI1], 'b-')
+        ax.plot([self.MI0_1]*2, [self.MI1, 0], 'b-')
+        R_min = np.min([self.MI0_1, self.MI1_0])
+        ax.plot([0,R_min], [0,R_min], 'r--')
+        ax.plot([0,self.MI0_1], [self.MI1]*2, '--', color='grey')
+        ax.plot([self.MI0]*2, [0,self.MI1_0], '--', color='grey')
 
     def get(self):
         return self.MI0, self.MI1, self.MI0_1, self.MI1_0, self.MI_sum
