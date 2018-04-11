@@ -4,7 +4,7 @@ from sigcom.rx.util import _max_star
 
 
 @njit
-def demap0(rx, X0, X1, Ps, phase,  P_noise, N_fec_cells, La0, La1):
+def demap0(rx, X0, X1, Ps, h0, h1, P_noise, N_fec_cells, La0, La1):
     N_cells = len(rx)
     M0 = len(X0)
     M1 = len(X1)
@@ -27,7 +27,7 @@ def demap0(rx, X0, X1, Ps, phase,  P_noise, N_fec_cells, La0, La1):
         D = np.zeros(M0*M1)
         for i in range(M0):
             for j in range(M1):
-                d = rx[k] - S0*X0[i] - S1*X1[j]*phase[k]
+                d = rx[k] - S0*h0[i]*X0[i] - S1*h1[j]*X1[j]
                 D[j*M0+i] = -1/P_noise*np.abs(d)**2
                 if len(La0) > 0:
                     for m in range(ldM0):
@@ -49,7 +49,7 @@ def demap0(rx, X0, X1, Ps, phase,  P_noise, N_fec_cells, La0, La1):
     return Llrs
 
 @njit
-def demap1(rx, X0, X1, Ps, phase,  P_noise, La0, La1):
+def demap1(rx, X0, X1, Ps, h0, h1, P_noise, La0, La1):
     N_cells = len(rx)
     M0 = len(X0)
     M1 = len(X1)
@@ -62,8 +62,8 @@ def demap1(rx, X0, X1, Ps, phase,  P_noise, La0, La1):
         D = np.zeros(M0*M1)
         for i in range(M0):
             for j in range(M1):
-                d = rx[k] - np.sqrt(Ps[0])*X0[i]
-                d-= np.sqrt(Ps[1])*X1[j]*phase[k]
+                d = rx[k] - np.sqrt(Ps[0])*h0[i]*X0[i]
+                d-= np.sqrt(Ps[1])*h1[j]*X1[j]
                 D[j*M0+i] = -1/P_noise*np.abs(d)**2
                 if len(La0) > 0:
                     for m in range(ldM0):
