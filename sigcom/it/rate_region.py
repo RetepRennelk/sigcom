@@ -16,6 +16,11 @@ class RateRegion():
     def get(self):
         return self.MI0, self.MI1, self.MI0_1, self.MI1_0, self.MI_sum
 
+    def plot(self, ax, linestyle):
+        ax.plot([0,self.MI0],[self.MI1_0]*2,linestyle)
+        ax.plot([self.MI0,self.MI0_1],[self.MI1_0,self.MI1],linestyle)
+        ax.plot([self.MI0_1]*2,[0,self.MI1],linestyle)
+
     @staticmethod
     def average(rr1, rr2):
         MI0 = (rr1.MI0+rr2.MI0)/2

@@ -5,6 +5,7 @@ from sigcom.coding.atsc import bititlv_short, bititlv_long
 from sigcom.coding.atsc import code_param_long, code_param_short
 from sigcom.coding.PCM import PCM
 from sigcom.coding.util import get_parity_interleaver
+from sigcom.ch.util import ricean_channel
 
 
 class ModCodAtsc():
@@ -39,8 +40,8 @@ class ModCodAtsc():
         parity = np.cumsum(parity, axis=0) % 2
         self.m_codebits = np.vstack((self.m_bits, parity))[self.parintl, :]
         self.m_codebits_biled = self.m_codebits[self.bil, :]
-        c = self.m_codebits_biled.T.flatten()
-        self.tx = map_bits_to_symbol_alphabet(c, self.X)
+        self.codebits = self.m_codebits_biled.T.flatten()
+        self.tx = map_bits_to_symbol_alphabet(self.codebits, self.X)
 
 
 class ModCodSP1p4():

@@ -1,12 +1,13 @@
 import numpy as np
-from sigcom.rx.util import _max_star, make_noise
+from sigcom.rx.util import _max_star
+from sigcom.ch.util import make_noise
 from numba import njit
 from sigcom.it.rate_region import RateRegion
 from sigcom.tx.spm import SP1p4
 
 
 @njit
-def _MI0(rx, tx0, Ps, X0, X1, phase, P_noise):
+def _MI0(rx, tx0, Ps, X0, X1, h0, h1, P_noise):
     N_cells = len(rx)
     P0 = Ps[0]
     P1 = Ps[1]
@@ -16,17 +17,17 @@ def _MI0(rx, tx0, Ps, X0, X1, phase, P_noise):
         num = -np.inf
         den = -np.inf
         for x1 in X1:
-            D = rx[k] - np.sqrt(P0)*tx0[k] - np.sqrt(P1)*x1*phase[k]
+            D = rx[k] - np.sqrt(P0)*tx0[k]*h0[k] - np.sqrt(P1)*x1*h1[k]
             num = _max_star(num, -np.abs(D)**2/P_noise)
             for x0 in X0:
-                D = rx[k] - np.sqrt(P0)*x0 - np.sqrt(P1)*x1*phase[k]
+                D = rx[k] - np.sqrt(P0)*x0*h0[k] - np.sqrt(P1)*x1*h1[k]
                 den = _max_star(den, -np.abs(D)**2/P_noise)
         MI += num - den
     return np.log2(M0)+MI/N_cells/np.log(2.0)
 
 
 @njit
-def _MI1(rx, tx1, Ps, X0, X1, phase, P_noise):
+def _MI1(rx, tx1, Ps, X0, X1, h0, h1, P_noise):
     N_cells = len(rx)
     P0 = Ps[0]
     P1 = Ps[1]
@@ -36,17 +37,17 @@ def _MI1(rx, tx1, Ps, X0, X1, phase, P_noise):
         num = -np.inf
         den = -np.inf
         for x0 in X0:
-            D = rx[k] - np.sqrt(P0)*x0 - np.sqrt(P1)*tx1[k]*phase[k]
+            D = rx[k] - np.sqrt(P0)*x0*h0[k] - np.sqrt(P1)*tx1[k]*h1[k]
             num = _max_star(num, -np.abs(D)**2/P_noise)
             for x1 in X1:
-                D = rx[k] - np.sqrt(P0)*x0 - np.sqrt(P1)*x1*phase[k]
+                D = rx[k] - np.sqrt(P0)*x0*h0[k] - np.sqrt(P1)*x1*h1[k]
                 den = _max_star(den, -np.abs(D)**2/P_noise)
         MI += num - den
     return np.log2(M0)+MI/N_cells/np.log(2.0)
 
 
 @njit
-def _MI0_1(rx, tx0, tx1, Ps, X0, X1, phase, P_noise):
+def _MI0_1(rx, tx0, tx1, Ps, X0, X1, h0, h1, P_noise):
     N_cells = len(rx)
     P0 = Ps[0]
     P1 = Ps[1]
@@ -54,17 +55,17 @@ def _MI0_1(rx, tx0, tx1, Ps, X0, X1, phase, P_noise):
     MI = 0
     for k in range(N_cells):
         den = -np.inf
-        D = rx[k] - np.sqrt(P0)*tx0[k] - np.sqrt(P1)*tx1[k]*phase[k]
+        D = rx[k] - np.sqrt(P0)*tx0[k]*h0[k] - np.sqrt(P1)*tx1[k]*h1[k]
         num = -np.abs(D)**2/P_noise
         for x0 in X0:
-            D = rx[k] - np.sqrt(P0)*x0 - np.sqrt(P1)*tx1[k]*phase[k]
+            D = rx[k] - np.sqrt(P0)*x0*h0[k] - np.sqrt(P1)*tx1[k]*h1[k]
             den = _max_star(den, -np.abs(D)**2/P_noise)
         MI += num - den
     return np.log2(M0)+MI/N_cells/np.log(2.0)
 
 
 @njit
-def _MI1_0(rx, tx0, tx1, Ps, X0, X1, phase, P_noise):
+def _MI1_0(rx, tx0, tx1, Ps, X0, X1, h0, h1, P_noise):
     N_cells = len(rx)
     P0 = Ps[0]
     P1 = Ps[1]
@@ -72,16 +73,16 @@ def _MI1_0(rx, tx0, tx1, Ps, X0, X1, phase, P_noise):
     MI = 0
     for k in range(N_cells):
         den = -np.inf
-        D = rx[k] - np.sqrt(P0)*tx0[k] - np.sqrt(P1)*tx1[k]*phase[k]
+        D = rx[k] - np.sqrt(P0)*tx0[k]*h0[k] - np.sqrt(P1)*tx1[k]*h1[k]
         num = -np.abs(D)**2/P_noise
         for x1 in X1:
-            D = rx[k] - np.sqrt(P0)*tx0[k] - np.sqrt(P1)*x1*phase[k]
+            D = rx[k] - np.sqrt(P0)*tx0[k]*h0[k] - np.sqrt(P1)*x1*h1[k]
             den = _max_star(den, -np.abs(D)**2/P_noise)
         MI += num - den
     return np.log2(M1)+MI/N_cells/np.log(2.0)
 
 @njit
-def _MI_sum(rx, tx0, tx1, Ps, X0, X1, phase, P_noise):
+def _MI_sum(rx, tx0, tx1, Ps, X0, X1, h0, h1, P_noise):
     N_cells = len(rx)
     P0 = Ps[0]
     P1 = Ps[1]
@@ -89,12 +90,12 @@ def _MI_sum(rx, tx0, tx1, Ps, X0, X1, phase, P_noise):
     M1 = len(X1)
     MI = 0
     for k in range(N_cells):
-        D = rx[k] - np.sqrt(P0)*tx0[k] - np.sqrt(P1)*tx1[k]*phase[k]
+        D = rx[k] - np.sqrt(P0)*tx0[k]*h0[k] - np.sqrt(P1)*tx1[k]*h1[k]
         num = -np.abs(D)**2/P_noise
         den = -np.inf
         for x0 in X0:
             for x1 in X1:
-                D = rx[k] - np.sqrt(P0)*x0 - np.sqrt(P1)*x1*phase[k]
+                D = rx[k] - np.sqrt(P0)*x0*h0[k] - np.sqrt(P1)*x1*h1[k]
                 den = _max_star(den, -np.abs(D)**2/P_noise)
         MI += num - den
     return np.log2(M0)+np.log2(M1)+MI/N_cells/np.log(2.0)
@@ -118,11 +119,11 @@ class MI_SP1p4():
 
         rx = self.sp1p4.tx + np.sqrt(P_noise)*self.noise
 
-        MI0 = _MI0(rx, tx0, Ps, X0, X1, phase, P_noise)
-        MI1 = _MI1(rx, tx1, Ps, X0, X1, phase, P_noise)
-        MI0_1 = _MI0_1(rx, tx0, tx1, Ps, X0, X1, phase, P_noise)
-        MI1_0 = _MI1_0(rx, tx0, tx1, Ps, X0, X1, phase, P_noise)
-        MI_sum = _MI_sum(rx, tx0, tx1, Ps, X0, X1, phase, P_noise)
+        MI0 = _MI0(rx, tx0, Ps, X0, X1, np.ones(len(self)), phase, P_noise)
+        MI1 = _MI1(rx, tx1, Ps, X0, X1, np.ones(len(self)), phase, P_noise)
+        MI0_1 = _MI0_1(rx, tx0, tx1, Ps, X0, X1, np.ones(len(self)), phase, P_noise)
+        MI1_0 = _MI1_0(rx, tx0, tx1, Ps, X0, X1, np.ones(len(self)), phase, P_noise)
+        MI_sum = _MI_sum(rx, tx0, tx1, Ps, X0, X1, np.ones(len(self)), phase, P_noise)
 
         self.rate_region = RateRegion(MI0, MI1, MI0_1, MI1_0, MI_sum)
 
