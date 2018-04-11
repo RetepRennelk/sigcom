@@ -33,16 +33,16 @@ def softXorFwdBwd(Llrs):
     ExtrinsicBwd = np.zeros(N)
     ExtrinsicBwd[-1] = np.inf
     for k in range(N-1, 0, -1):
-        ExtrinsicBwd[k-1] = softXor(np.array([ExtrinsicBwd[k], Llrs[k]]))
+        ExtrinsicBwd[k-1] = _partialSoftXor(ExtrinsicBwd[k], Llrs[k])
 
     ExtrinsicFwd = np.zeros(N)
     ExtrinsicFwd[0] = np.inf
     for k in range(N-1):
-        ExtrinsicFwd[k+1] = softXor(np.array([ExtrinsicFwd[k], Llrs[k]]))
+        ExtrinsicFwd[k+1] = _partialSoftXor(ExtrinsicFwd[k], Llrs[k])
 
     Extrinsic = np.zeros(N)
     for k in range(N):
-        Extrinsic[k] = softXor(np.array([ExtrinsicFwd[k], ExtrinsicBwd[k]]))
+        Extrinsic[k] = _partialSoftXor(ExtrinsicFwd[k], ExtrinsicBwd[k])
     return Extrinsic
 
 
