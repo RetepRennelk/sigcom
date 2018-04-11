@@ -81,6 +81,50 @@ class ModCodSP1p4_rs():
         self.tx = m_tx0.flatten() + m_tx1.flatten() * self.phase
 
 
+class ModCodSP_ricean():
+    def __init__(self, M, CR, N_ldpc):
+        self.tx0 = ModCodAtsc(M, CR, N_ldpc)
+        self.tx1 = ModCodAtsc(M, CR, N_ldpc)
+
+    def update(self, K_factor, N_codewords):
+        self.tx0.generate(N_codewords)
+        self.tx1.generate(N_codewords)
+        
+        N_cells = len(self.tx0.tx)
+        
+        self.h0 = ricean_channel(N_cells, K_factor)
+        self.h1 = ricean_channel(N_cells, K_factor)
+
+    def generate(self, Ps):
+        self.tx = np.sqrt(Ps[0]) * self.h0 * self.tx0.tx \
+                  + np.sqrt(Ps[1]) * self.h1 * self.tx1.tx
+
+
+class ModCodSP_rs_ricean():
+    def __init__(self, M, CR, N_ldpc):
+        self.tx0 = ModCodAtsc(M, CR, N_ldpc)
+        self.tx1 = ModCodAtsc(M, CR, N_ldpc)
+
+    def update(self, K_factor, N_codewords):
+        self.tx0.generate(N_codewords)
+        self.tx1.generate(N_codewords)
+        
+        N_cells = len(self.tx0.tx)
+        
+        self.h0 = ricean_channel(N_cells, K_factor)
+        self.h1 = ricean_channel(N_cells, K_factor)
+
+    def generate(self, Ps):
+        N_cells = self.tx0.N_fec_cells
+        m_tx0 = self.tx0.tx.reshape(-1, N_cells).copy()
+        m_tx1 = self.tx1.tx.reshape(-1, N_cells).copy()
+        m_tx0[:, : N_cells//2] *= np.sqrt(Ps[0])
+        m_tx1[:, : N_cells//2] *= np.sqrt(Ps[1])
+        m_tx0[:, N_cells//2:] *= np.sqrt(Ps[1])
+        m_tx1[:, N_cells//2:] *= np.sqrt(Ps[0])
+        self.tx = self.h0 * m_tx0.flatten() + self.h1 * m_tx1.flatten()
+
+
 class LdpcEncAtsc():
     def __init__(self, CR, N_ldpc):
         self.CR = CR
