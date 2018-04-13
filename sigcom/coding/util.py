@@ -156,12 +156,10 @@ class LinLayerwisePcks():
     Keep track of the original pcks with a second
     list 'addr'
 
-    Please note that the 0-th layer is parsed last.
-
     Example:
     layerwise_pcks = [[[0,1],[2,3]],[[4,5],[6,7],[8,9]]]
-    llpcks = [4,5,6,7,8,9,0,1,2,3]
-    addr = [0,6,10]
+    llpcks = [0,1,2,3,4,5,6,7,8,9]
+    addr = [0,4,10]
     '''
     def __init__(self, layerwise_pcks):
         addr = [0]
@@ -169,7 +167,6 @@ class LinLayerwisePcks():
 
         N_layers = len(layerwise_pcks)
         for l in range(N_layers):
-            l = (l+1) % N_layers
             N_pcks = 0
             for pck in layerwise_pcks[l]:
                 linearized_layerwise_pcks.extend(pck)

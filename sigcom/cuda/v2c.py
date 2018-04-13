@@ -38,7 +38,6 @@ def d_update_v2c(dLlrs_ext, dLlrs, dC2Vs):
         cuda.syncthreads()
 
         N_offset = (N_offset + N_pcks*2) % len(pcks)
-
 '''.format(ar_layerwise_pcks=str(code.llpcks.llpcks),
            ar_addr=str(code.llpcks.addr),
            N_ldpc=code.N,
