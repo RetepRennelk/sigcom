@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class RateRegion():
     def __init__(self, MI0, MI1, MI0_1, MI1_0, MI_sum):
         self.MI0 = MI0
@@ -20,6 +23,8 @@ class RateRegion():
         ax.plot([0,self.MI0],[self.MI1_0]*2,linestyle)
         ax.plot([self.MI0,self.MI0_1],[self.MI1_0,self.MI1],linestyle)
         ax.plot([self.MI0_1]*2,[0,self.MI1],linestyle)
+        MI_max = np.max((self.MI1_0, self.MI0_1))
+        ax.plot([0, MI_max], [0, MI_max], linestyle)
 
     @staticmethod
     def average(rr1, rr2):
