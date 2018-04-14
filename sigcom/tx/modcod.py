@@ -127,6 +127,12 @@ class ModCodSP_rs_ricean():
 
 
 class LdpcEncAtsc():
+    '''
+    Generate bit-interleaved LDPC codewords
+
+    ldpcEncAtsc = LdpcEncAtsc(CR, N_ldpc)
+    ldpcEncAtsc.generate(N_codewords)
+    '''
     def __init__(self, CR, N_ldpc):
         self.CR = CR
         self.N_ldpc = N_ldpc
