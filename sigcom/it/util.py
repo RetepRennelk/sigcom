@@ -57,6 +57,14 @@ def mutual_information_magic(Llrs, bits, ldM):
 
 @njit
 def bits_to_apriori(bits, Ia):
+    '''
+    Syntax:
+    bits_to_apriori(bits, [Ia])
+
+    Remark:
+    - Call with [Ia]!
+    - Repeat: Do not forget the [.]!
+    '''
     noise = np.random.randn(len(bits))
     Pa = getNoisePower(Ia)
     Llrs = Pa/2*(1-2*bits) + np.sqrt(Pa)*noise
