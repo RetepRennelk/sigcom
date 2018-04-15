@@ -210,6 +210,7 @@ def decode(dLlrs_ext, dLlrs, dC2Vs, dIterations, nMaxFecIterations, N_diags, cli
     if tx == 0:
         dIterations[bx] = it
 
+
 class GpuFecDec():
     def __init__(self, code, N_codewords, clip_level=16):
         self.code = code

@@ -26,10 +26,14 @@ def d_update_c2v(dLlrs_ext, dC2Vs):
     bwd = cuda.local.array({N_max_num_diags}, dtype=numba.float32)       
 
     fwd[0] = np.inf
+
+    # --------------------
+    # Layers 1..N_layers-1
+    # --------------------
     
     N_layers = len(addr)-1
-    N_offset = 0
-    for l in range(N_layers-1):
+    N_offset = addr[1]
+    for l in range(1, N_layers):
         N_pcks = (addr[l+1] - addr[l]) // 2
         
         # Forward Iteration
@@ -58,33 +62,32 @@ def d_update_c2v(dLlrs_ext, dC2Vs):
         # The 0-th layer
         # --------------
     
-        l = N_layers-1
-        N_pcks = (addr[l+1] - addr[l]) // 2
+        l = 0
+        N_pcks = addr[1] // 2
 
         # Forward Iteration
         for i in range(N_pcks-1):
-            base   = pcks[N_offset+2*i]
-            offset = pcks[N_offset+2*i+1]
-            a      = base + (offset+tx) % {CF}
-            fwd[i+1] = _partialSoftXor(fwd[i], dLlrs_ext[bx*{N_ldpc}+a]-dC2Vs[bx*{N_diags}+N_offset//2+i, tx])
+            base   = pcks[2*i]
+            offset = pcks[2*i+1]
+            a      = base + (offset + tx) % {CF}
+            fwd[i+1] = _partialSoftXor(fwd[i], dLlrs_ext[bx*{N_ldpc}+a]-dC2Vs[bx*{N_diags}+i, tx])
 
         # Backward Iteration
         bwd[N_pcks-1] = np.inf
         for i in range(N_pcks-1, 0, -1):
-            base   = pcks[N_offset+2*i]
-            offset = pcks[N_offset+2*i+1]
-            a      = base + (offset+tx) % {CF}
+            base   = pcks[2*i]
+            offset = pcks[2*i+1]
+            a      = base + (offset + tx) % {CF}
             if tx==0 and i==N_pcks-1:
                 bwd[i-1] = np.inf
             else:
-                bwd[i-1] = _partialSoftXor(bwd[i], dLlrs_ext[bx*{N_ldpc}+a]-dC2Vs[bx*{N_diags}+N_offset//2+i, tx])
+                bwd[i-1] = _partialSoftXor(bwd[i], dLlrs_ext[bx*{N_ldpc}+a]-dC2Vs[bx*{N_diags}+i, tx])
 
         for i in range(N_pcks):
             if tx==0 and i==N_pcks-1:
-                dC2Vs[bx*{N_diags}+N_offset//2+i, tx] = 0.0
+                dC2Vs[bx*{N_diags}+i, tx] = 0.0
             else:
-                dC2Vs[bx*{N_diags}+N_offset//2+i, tx] = _partialSoftXor(fwd[i], bwd[i])
-
+                dC2Vs[bx*{N_diags}+i, tx] = _partialSoftXor(fwd[i], bwd[i])
 '''.format(ar_layerwise_pcks=str(code.llpcks.llpcks),
            ar_addr=str(code.llpcks.addr),
            N_max_num_diags=code.N_max_num_diags,

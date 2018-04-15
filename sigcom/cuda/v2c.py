@@ -26,9 +26,11 @@ def d_update_v2c(dLlrs_ext, dLlrs, dC2Vs):
     
     cuda.syncthreads()
 
+    # Process layers 1..N_layers-1
+
     N_layers = len(addr)-1
-    N_offset = 0
-    for l in range(N_layers):
+    N_offset = addr[1]
+    for l in range(1,N_layers):
         N_pcks = (addr[l+1]-addr[l]) // 2
         for i in range(N_pcks):
             base   = pcks[N_offset+2*i]
@@ -36,8 +38,17 @@ def d_update_v2c(dLlrs_ext, dLlrs, dC2Vs):
             a      = base + (offset+tx) % {CF}
             dLlrs_ext[bx*{N_ldpc}+a] += dC2Vs[bx*{N_diags}+(N_offset//2)+i, tx]
         cuda.syncthreads()
-
         N_offset = (N_offset + N_pcks*2) % len(pcks)
+
+    # The 0-th layer
+
+    l = 0
+    N_pcks = addr[1] // 2
+    for i in range(N_pcks):
+        base   = pcks[2*i]
+        offset = pcks[2*i+1]
+        a      = base + (offset+tx) % {CF}
+        dLlrs_ext[bx*{N_ldpc}+a] += dC2Vs[bx*{N_diags}+i, tx]
 '''.format(ar_layerwise_pcks=str(code.llpcks.llpcks),
            ar_addr=str(code.llpcks.addr),
            N_ldpc=code.N,
