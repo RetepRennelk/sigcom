@@ -79,6 +79,18 @@ def plot_constellation(c, marker='bo'):
     plt.show()
 
 
+def make_cells(qam, N_cells):
+    '''
+    tx, bits = make_cells(qam, N_cells)
+    '''
+    M = len(qam)
+    ldM = int(np.log2(M))
+    N_bits = ldM*N_cells
+    bits = generate_bits(N_bits)
+    tx = map_bits_to_symbol_alphabet(bits, qam)
+    return tx, bits
+
+
 if __name__ == "__main__":
     z = generate_bits(10)
     pass
