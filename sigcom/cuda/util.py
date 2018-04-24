@@ -63,7 +63,7 @@ class Gpu():
         self.MAX_BLOCK_DIM_Z = gpu.MAX_BLOCK_DIM_Z
         self.MAX_GRID_DIM_X = gpu.MAX_GRID_DIM_X
         self.MAX_GRID_DIM_Y = gpu.MAX_GRID_DIM_Y
-        self.MAX_GRID_DIM_Z = gpu.MAX_GRID_DIM_Z        
+        self.MAX_GRID_DIM_Z = gpu.MAX_GRID_DIM_Z
         self.MAX_SHARED_MEMORY_PER_BLOCK = gpu.MAX_SHARED_MEMORY_PER_BLOCK
         self.ASYNC_ENGINE_COUNT = gpu.ASYNC_ENGINE_COUNT
         self.CAN_MAP_HOST_MEMORY = gpu.CAN_MAP_HOST_MEMORY
