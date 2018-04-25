@@ -13,40 +13,39 @@ ar_addr = np.array({ar_addr})
 def d_update_v2c(dLlrs_ext, dLlrs, dC2Vs):
     pcks = cuda.const.array_like(ar_layerwise_pcks)
     addr = cuda.const.array_like(ar_addr)
-    
+
     tx = cuda.threadIdx.x
     bx = cuda.blockIdx.x
     bw = cuda.blockDim.x
-    
+
     for i in range({N_ldpc} // {CF}):
         dLlrs_ext[bx*{N_ldpc}+i*{CF}+tx] = dLlrs[bx*{N_ldpc}+i*{CF}+tx]
-    
+
     cuda.syncthreads()
 
-    if 1:
-        # Process layers 1..N_layers-1
+    # Process layers 1..N_layers-1
 
-        N_layers = len(addr)-1
-        N_offset = addr[1]
-        for l in range(1,N_layers):
-            N_pcks = (addr[l+1]-addr[l]) // 2
-            for i in range(N_pcks):
-                base   = pcks[N_offset+2*i]
-                offset = pcks[N_offset+2*i+1]
-                a      = base + (offset+tx) % {CF}
-                dLlrs_ext[bx*{N_ldpc}+a] += dC2Vs[bx*{N_diags}+(N_offset//2)+i, tx]
-            cuda.syncthreads()
-            N_offset = (N_offset + N_pcks*2) % len(pcks)
-
-    if 1:
-        # The 0-th layer
-        l = 0
-        N_pcks = addr[1] // 2
+    N_layers = len(addr)-1
+    N_offset = addr[1]
+    for l in range(1, N_layers):
+        N_pcks = (addr[l+1]-addr[l]) // 2
         for i in range(N_pcks):
-            base   = pcks[2*i]
-            offset = pcks[2*i+1]
+            base   = pcks[N_offset+2*i]
+            offset = pcks[N_offset+2*i+1]
             a      = base + (offset+tx) % {CF}
-            dLlrs_ext[bx*{N_ldpc}+a] += dC2Vs[bx*{N_diags}+i, tx]
+            dLlrs_ext[bx*{N_ldpc}+a] += dC2Vs[bx*{N_diags}+(N_offset//2)+i, tx]
+        cuda.syncthreads()
+        N_offset = (N_offset + N_pcks*2) % len(pcks)
+
+    # The 0-th layer
+
+    l = 0
+    N_pcks = addr[1] // 2
+    for i in range(N_pcks):
+        base   = pcks[2*i]
+        offset = pcks[2*i+1]
+        a      = base + (offset+tx) % {CF}
+        dLlrs_ext[bx*{N_ldpc}+a] += dC2Vs[bx*{N_diags}+i, tx]
 '''
 
 s_update_c2v = '''
@@ -54,7 +53,7 @@ s_update_c2v = '''
 def d_update_c2v(dLlrs_ext, dC2Vs):
     pcks = cuda.const.array_like(ar_layerwise_pcks)
     addr = cuda.const.array_like(ar_addr)
-    
+
     tx = cuda.threadIdx.x
     bx = cuda.blockIdx.x
     bw = cuda.blockDim.x
@@ -65,12 +64,12 @@ def d_update_c2v(dLlrs_ext, dC2Vs):
     fwd[0] = np.inf
 
     # Layers 1..N_layers-1
-    
+
     N_layers = len(addr)-1
     N_offset = addr[1]
     for l in range(1, N_layers):
         N_pcks = (addr[l+1] - addr[l]) // 2
-        
+
         # Forward Iteration
         for i in range(N_pcks-1):
             base   = pcks[N_offset+2*i]
@@ -85,16 +84,16 @@ def d_update_c2v(dLlrs_ext, dC2Vs):
             offset = pcks[N_offset+2*i+1]
             a      = base + (offset+tx) % {CF}
             bwd[i-1] = _partialSoftXor(bwd[i], dLlrs_ext[bx*{N_ldpc}+a]-dC2Vs[bx*{N_diags}+N_offset//2+i, tx])
-        
+
         for i in range(N_pcks):
             dC2Vs[bx*{N_diags}+N_offset//2+i, tx] = _partialSoftXor(fwd[i], bwd[i])
-        
+
         N_offset += 2*N_pcks
-        
+
         cuda.syncthreads()
 
     # The 0-th layer
-    
+
     l = 0
     N_pcks = addr[1] // 2
 
