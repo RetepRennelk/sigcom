@@ -19,12 +19,13 @@ class RateRegion():
     def get(self):
         return self.MI0, self.MI1, self.MI0_1, self.MI1_0, self.MI_sum
 
-    def plot(self, ax, linestyle):
+    def plot(self, ax, linestyle, sw_main_diag=False):
         ax.plot([0,self.MI0],[self.MI1_0]*2,linestyle)
         ax.plot([self.MI0,self.MI0_1],[self.MI1_0,self.MI1],linestyle)
         ax.plot([self.MI0_1]*2,[0,self.MI1],linestyle)
-        MI_max = np.max((self.MI1_0, self.MI0_1))
-        ax.plot([0, MI_max], [0, MI_max], linestyle)
+        if sw_main_diag:
+            MI_max = np.max((self.MI1_0, self.MI0_1))
+            ax.plot([0, MI_max], [0, MI_max], linestyle)
 
     @staticmethod
     def average(rr1, rr2):
