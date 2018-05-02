@@ -35,6 +35,50 @@ class QamAwgnBicmCapacity():
         return MIs
 
 
+class QamBicmCapacity():
+    '''
+    Compute BICM capacity for fading channels
+
+    channel = QamBicmCapacity.wrap(ricean_channel, N_cells, K_factor)
+    q = QamBicmCapacity(qam, N_cells, channel)
+    '''
+    def __init__(self, qam, N_cells, channel):
+        self.qam = qam
+        self.N_cells = N_cells
+        self.channel = channel
+        M = len(qam)
+        self.ldM = int(np.log2(M))
+        self.update()
+
+    def update(self):
+        self.tx, self.bits = make_cells(self.qam, self.N_cells)
+        self.h = self.channel()
+        self.noise = make_noise(self.N_cells)
+
+    def _generate_mi(self, SNR_dB):
+        SNR = 10**(SNR_dB/10)
+        rx = self.h*self.tx+self.noise/np.sqrt(SNR)
+        Llrs = demap(rx, self.qam, SNR, self.h)
+        MI = np.sum(mutual_information_magic(Llrs, self.bits, self.ldM))
+        return MI
+
+    def compute(self, SNRs_dB):
+        MIs = []
+        for SNR_dB in SNRs_dB:
+            MI = self._generate_mi(SNR_dB)
+            MIs.append(MI)
+        return MIs
+
+    @staticmethod
+    def wrap(func, *args):
+        '''
+        Use this function to call a channel generator like ricean_channel.
+        '''
+        def wrapped():
+            return func(*args)
+        return wrapped
+
+
 if __name__ == '__main__':
     if 1:
         ldM = 2
