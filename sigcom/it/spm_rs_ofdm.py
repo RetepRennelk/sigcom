@@ -167,13 +167,35 @@ class MI_SP1p4_rs_ofdm():
         self.noise = make_noise(self.N_fec_cells*N_codewords)
 
     def generate(self, C_I_dB, C_N_dB, rho_dB):
-        C = 1
+        if 1:
+            N = 1
+            C_I = 10**(C_I_dB/10)
+            C_N = 10**(C_N_dB/10)
+            rho = 10**(rho_dB/10)
+            C = C_N*N
+            self.P_noise = N
+            self.Powers0 = [2*rho/(1+rho)*C, 2/(1+rho)*C]
+            self.Powers1 = [2/(1+rho)*C/C_I, 2*rho/(1+rho)*C/C_I]
+            self.mc.generate(self.Powers0, self.Powers1)
+            self.rx = self.mc.tx + self.noise*np.sqrt(self.P_noise)
+        elif 0:
+            C = 1
+            C_I = 10**(C_I_dB/10)
+            C_N = 10**(C_N_dB/10)
+            rho = 10**(rho_dB/10)
+            self.P_noise = C/C_N
+            self.Powers0 = [2*rho/(1+rho)*C, 2/(1+rho)*C]
+            self.Powers1 = [2/(1+rho)*C/C_I, 2*rho/(1+rho)*C/C_I]
+            self.mc.generate(self.Powers0, self.Powers1)
+            self.rx = self.mc.tx + self.noise*np.sqrt(self.P_noise)
+
+    def generate_snr(self, C_I_dB, SNR_dB, rho_dB):
+        self.P_noise = 1
         C_I = 10**(C_I_dB/10)
-        C_N = 10**(C_N_dB/10)
+        SNR = 10**(SNR_dB/10)
         rho = 10**(rho_dB/10)
-        self.P_noise = C/C_N
-        self.Powers0 = [2*rho/(1+rho)*C, 2/(1+rho)*C]
-        self.Powers1 = [2/(1+rho)*C/C_I, 2*rho/(1+rho)*C/C_I]
+        self.Powers0 = [rho/(1+rho)*2*SNR/(1+1/C_I), 1/(1+rho)*2*SNR/(1+1/C_I)]
+        self.Powers1 = [1/(1+rho)*2*SNR/(1+C_I), rho/(1+rho)*2*SNR/(1+C_I)]
         self.mc.generate(self.Powers0, self.Powers1)
         self.rx = self.mc.tx + self.noise*np.sqrt(self.P_noise)
 
@@ -199,6 +221,7 @@ class MI_SP1p4_rs_ofdm():
                              self.mc.tx0.X, self.mc.tx1.X, 
                              np.ones(N_cells), self.mc.phase,
                              self.P_noise, self.N_fec_cells)
+        self.MI_sums = 0.5*(self.MI0_1s+self.MI0s+self.MI1_0s+self.MI1s)
 
 
 class MI_SP_ricean_rs_ofdm():
