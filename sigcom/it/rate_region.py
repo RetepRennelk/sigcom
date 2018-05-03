@@ -35,3 +35,20 @@ class RateRegion():
         MI1_0 = (rr1.MI1_0+rr2.MI1_0)/2
         MI_sum = (rr1.MI_sum+rr2.MI_sum)/2
         return RateRegion(MI0, MI1, MI0_1, MI1_0, MI_sum)
+
+
+def plot_gaussian_rate_region(ax, C_I_dB, C_N_dB, linestyle):
+    C_I = 10**(C_I_dB/10)
+    C_N = 10**(C_N_dB/10)
+    C = 1
+    P_I = C/C_I
+    N = C/C_N
+    MI0 = np.log2(1+C/(P_I+N))
+    MI1 = np.log2(1+P_I/(C+N))
+    MI0_1 = np.log2(1+C/N)
+    MI1_0 = np.log2(1+P_I/N)
+    MI_sum = np.log2(1+(C+P_I)/N)
+    rr = RateRegion(MI0, MI1, MI0_1, MI1_0, MI_sum)
+    rr.plot(ax, linestyle)
+    ax.grid()
+    ax.set_title('C_I={}dB, C_N={}dB'.format(C_I_dB, C_N_dB))
