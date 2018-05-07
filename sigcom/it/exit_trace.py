@@ -61,6 +61,17 @@ class EXIT_trace():
         plt.show()
 
 
+def MI_after_C2V(MI_in, C2Vs, CN_Ias):
+    a = np.argsort((MI_in-CN_Ias)**2)
+    assert a[0]-a[1]==1 or a[0]-a[1]==-1
+    y0 = CN_Ias[a[0]]
+    y1 = CN_Ias[a[1]] 
+    x0 = C2Vs[a[0]] 
+    x1 = C2Vs[a[1]]
+    MI_out = (MI_in-y1)/(y0-y1)*(x0-x1)+x1
+    return MI_out
+
+
 if __name__ == '__main__':
     x_down = np.linspace(0, 1, 11)
     x_up = x_down
