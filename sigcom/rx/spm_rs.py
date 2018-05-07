@@ -4,7 +4,7 @@ from sigcom.rx.util import _max_star
 
 
 @njit
-def demap0(rx, X0, X1, Ps, h0, h1, P_noise, N_fec_cells, La0, La1):
+def demap0(rx, X0, X1, Powers0, Powers1, phase,  P_noise, N_fec_cells, La0, La1):
     N_cells = len(rx)
     M0 = len(X0)
     M1 = len(X1)
@@ -12,22 +12,23 @@ def demap0(rx, X0, X1, Ps, h0, h1, P_noise, N_fec_cells, La0, La1):
     ldM1 = int(np.log2(M1))
     N_bits = N_cells*ldM0
 
-    P0_sqrt = np.sqrt(Ps[0])
-    P1_sqrt = np.sqrt(Ps[1]) 
+    Cp_sqrt  = np.sqrt(Powers0[0])
+    Cpp_sqrt = np.sqrt(Powers0[1]) 
+    Ip_sqrt  = np.sqrt(Powers1[0])
+    Ipp_sqrt = np.sqrt(Powers1[1]) 
 
     Llrs = np.zeros(N_bits)
     for k in range(N_cells):
-        sw = int(k/(N_fec_cells/2)) % 2
-        if sw == 0:
-            S0 = P0_sqrt
-            S1 = P1_sqrt
+        if int(k/(N_fec_cells/2)) % 2 == 0:
+            C_sqrt = Cp_sqrt
+            I_sqrt = Ip_sqrt
         else:
-            S0 = P1_sqrt
-            S1 = P0_sqrt
+            C_sqrt = Cpp_sqrt
+            I_sqrt = Ipp_sqrt
         D = np.zeros(M0*M1)
         for i in range(M0):
             for j in range(M1):
-                d = rx[k] - S0*h0[k]*X0[i] - S1*h1[k]*X1[j]
+                d = rx[k] - C_sqrt*X0[i] - I_sqrt*X1[j]*phase[k]
                 D[j*M0+i] = -1/P_noise*np.abs(d)**2
                 if len(La0) > 0:
                     for m in range(ldM0):
@@ -49,7 +50,7 @@ def demap0(rx, X0, X1, Ps, h0, h1, P_noise, N_fec_cells, La0, La1):
     return Llrs
 
 @njit
-def demap1(rx, X0, X1, Ps, h0, h1, P_noise, La0, La1):
+def demap1(rx, X0, X1, Powers0, Powers1, phase, P_noise, N_fec_cells, La0, La1):
     N_cells = len(rx)
     M0 = len(X0)
     M1 = len(X1)
@@ -57,13 +58,23 @@ def demap1(rx, X0, X1, Ps, h0, h1, P_noise, La0, La1):
     ldM1 = int(np.log2(M1))
     N_bits = N_cells*ldM1
 
+    Cp_sqrt  = np.sqrt(Powers0[0])
+    Cpp_sqrt = np.sqrt(Powers0[1]) 
+    Ip_sqrt  = np.sqrt(Powers1[0])
+    Ipp_sqrt = np.sqrt(Powers1[1]) 
+
     Llrs = np.zeros(N_bits)
     for k in range(N_cells):
+        if int(k/(N_fec_cells/2)) % 2 == 0:
+            C_sqrt = Cp_sqrt
+            I_sqrt = Ip_sqrt
+        else:
+            C_sqrt = Cpp_sqrt
+            I_sqrt = Ipp_sqrt
         D = np.zeros(M0*M1)
         for i in range(M0):
             for j in range(M1):
-                d = rx[k] - np.sqrt(Ps[0])*h0[k]*X0[i]
-                d-= np.sqrt(Ps[1])*h1[k]*X1[j]
+                d = rx[k] - C_sqrt*X0[i] - I_sqrt*X1[j]*phase[k]
                 D[j*M0+i] = -1/P_noise*np.abs(d)**2
                 if len(La0) > 0:
                     for m in range(ldM0):
