@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 
 
 class EXIT_trace():
+    '''
+    This class takes two enveloping EXIT functions and traces out a trajectory.
+    '''
     def __init__(self, x_down, y_down, x_up, y_up):
         self.x_down = x_down
         self.y_down = y_down
