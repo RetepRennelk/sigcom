@@ -27,7 +27,7 @@ def make_stairs(V2C, C2V):
 M = 4
 CR = [8, 15]
 N_ldpc = 64800
-K = int(N_ldpc*CR[0]/CR[1])
+K = int(N_ldpc * CR[0] / CR[1])
 N_codewords = 1
 tx = ModCodSP1p4_rs(M, CR, N_ldpc)
 tx.tx1.bil = tx.tx1.bil[::-1]
@@ -45,8 +45,7 @@ rho = 10**(rho_dB/10)
 Cp = 2*rho/(1+rho)
 Cpp = 2/(1+rho)
 Ip = 2/(1+rho)/C_I
-Ipp
-= 2*rho/(1+rho)/C_I
+Ipp = 2*rho/(1+rho)/C_I
 P_noise = 1/C_N
 
 Powers0 = [Cp, Cpp]
