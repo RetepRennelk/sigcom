@@ -20,7 +20,7 @@ class ColumnTwistInterleaver():
         for col in range(self.Nc):
             mBase[:,col] = col*Nr+ (np.arange(Nr)-self.tp[col]) % Nr
         permVector = mBase.flatten()
-        return permVector
+        return np.int32(permVector)
 
 
 if __name__ == '__main__':
