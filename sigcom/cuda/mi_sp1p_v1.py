@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 
 
 @cuda.jit(device=True)
-def max_star(a,b):
-    return max((a,b))+math.log(1.+math.exp(-abs(a-b)))
+def max_star(a, b):
+    return max((a, b))+math.log(1.+math.exp(-abs(a-b)))
 
 
 def qam2str(qam):
@@ -19,7 +19,7 @@ def qam2str(qam):
     return '[' + sqam + ']'
 
 
-sMI0='''
+sMI0 = '''
 cqam0 = np.array({sqam0})
 cqam1 = np.array({sqam1})
 
@@ -29,21 +29,21 @@ def gMI0(MIs, tx0, tx1, noise, h0, h1, C_Ns_dB, C_Is_dB, rho_dB):
     qam1 = cuda.const.array_like(cqam1)
 
     tidx = cuda.threadIdx.x
-    bw   = cuda.blockDim.x    
+    bw   = cuda.blockDim.x
     bidx = cuda.blockIdx.x
     bidy = cuda.blockIdx.y
-    
-    C_I = 10.**(C_Is_dB[bidy]/10.)
-    C_N = 10.**(C_Ns_dB[bidx]/10.)
+
+    C_I = 10.**(C_Is_dB[bidx]/10.)
+    C_N = 10.**(C_Ns_dB[bidy]/10.)
     rho = 10.**(rho_dB/10)
 
     Cp_sqrt  = math.sqrt(2.*rho/(1.+rho))
     Cpp_sqrt = math.sqrt(2./(1.+rho))
     Ip_sqrt  = math.sqrt(2./(1.+rho)/C_I)
     Ipp_sqrt = math.sqrt(2.*rho/(1.+rho)/C_I)
-    
+
     P_noise = 1./C_N
-    
+
     N_cells = len(tx0)
     MI0 = 0.
     k = tidx
@@ -54,9 +54,9 @@ def gMI0(MIs, tx0, tx1, noise, h0, h1, C_Ns_dB, C_Is_dB, rho_dB):
         else:
             C_sqrt = Cpp_sqrt
             I_sqrt = Ipp_sqrt
-        
+
         rx = C_sqrt*tx0[k]*h0[k] + I_sqrt*tx1[k]*h1[k] + noise[k]*math.sqrt(P_noise)
-        
+
         num = -np.inf
         den = -np.inf
         for x1 in qam1:
@@ -75,10 +75,10 @@ def gMI0(MIs, tx0, tx1, noise, h0, h1, C_Ns_dB, C_Is_dB, rho_dB):
     if tidx == 0:
         for i in range(1,bw):
             MI0 += shmem[i]
-        MIs[bidy, bidx] = {ldM0} + MI0/N_cells/math.log(2.0)
+        MIs[bidx, bidy] = {ldM0} + MI0/N_cells/math.log(2.0)
 '''
 
-sMI1='''
+sMI1 = '''
 cqam0 = np.array({sqam0})
 cqam1 = np.array({sqam1})
 
@@ -88,21 +88,21 @@ def gMI1(MIs, tx0, tx1, noise, h0, h1, C_Ns_dB, C_Is_dB, rho_dB):
     qam1 = cuda.const.array_like(cqam1)
 
     tidx = cuda.threadIdx.x
-    bw   = cuda.blockDim.x    
+    bw   = cuda.blockDim.x
     bidx = cuda.blockIdx.x
     bidy = cuda.blockIdx.y
-    
-    C_I = 10.**(C_Is_dB[bidy]/10.)
-    C_N = 10.**(C_Ns_dB[bidx]/10.)
+
+    C_I = 10.**(C_Is_dB[bidx]/10.)
+    C_N = 10.**(C_Ns_dB[bidy]/10.)
     rho = 10.**(rho_dB/10)
 
     Cp_sqrt  = math.sqrt(2.*rho/(1.+rho))
     Cpp_sqrt = math.sqrt(2./(1.+rho))
     Ip_sqrt  = math.sqrt(2./(1.+rho)/C_I)
     Ipp_sqrt = math.sqrt(2.*rho/(1.+rho)/C_I)
-    
+
     P_noise = 1./C_N
-    
+
     N_cells = len(tx0)
     MI1 = 0.
     k = tidx
@@ -134,11 +134,11 @@ def gMI1(MIs, tx0, tx1, noise, h0, h1, C_Ns_dB, C_Is_dB, rho_dB):
     if tidx == 0:
         for i in range(1,bw):
             MI1 += shmem[i]
-        MIs[bidy, bidx] = {ldM1} + MI1/N_cells/math.log(2.0)
+        MIs[bidx, bidy] = {ldM1} + MI1/N_cells/math.log(2.0)
 '''
 
 
-sMI1_0='''
+sMI1_0 = '''
 cqam0 = np.array({sqam0})
 cqam1 = np.array({sqam1})
 
@@ -146,23 +146,23 @@ cqam1 = np.array({sqam1})
 def gMI1_0(MIs, tx0, tx1, noise, h0, h1, C_Ns_dB, C_Is_dB, rho_dB):
     qam0 = cuda.const.array_like(cqam0)
     qam1 = cuda.const.array_like(cqam1)
-    
+
     tidx = cuda.threadIdx.x
-    bw   = cuda.blockDim.x    
+    bw   = cuda.blockDim.x
     bidx = cuda.blockIdx.x
     bidy = cuda.blockIdx.y
-    
-    C_I = 10.**(C_Is_dB[bidy]/10.)
-    C_N = 10.**(C_Ns_dB[bidx]/10.)
+
+    C_I = 10.**(C_Is_dB[bidx]/10.)
+    C_N = 10.**(C_Ns_dB[bidy]/10.)
     rho = 10.**(rho_dB/10)
 
     Cp_sqrt  = math.sqrt(2.*rho/(1.+rho))
     Cpp_sqrt = math.sqrt(2./(1.+rho))
     Ip_sqrt  = math.sqrt(2./(1.+rho)/C_I)
     Ipp_sqrt = math.sqrt(2.*rho/(1.+rho)/C_I)
-    
+
     P_noise = 1./C_N
-    
+
     N_cells = len(tx0)
     MI1_0 = 0.
     k = tidx
@@ -173,17 +173,17 @@ def gMI1_0(MIs, tx0, tx1, noise, h0, h1, C_Ns_dB, C_Is_dB, rho_dB):
         else:
             C_sqrt = Cpp_sqrt
             I_sqrt = Ipp_sqrt
-        
+
         rx = C_sqrt*tx0[k]*h0[k] + I_sqrt*tx1[k]*h1[k] + noise[k]*math.sqrt(P_noise)
-        
+
         D = rx - C_sqrt*tx0[k]*h0[k] - I_sqrt*tx1[k]*h1[k]
         num = -abs(D)**2/P_noise
-        
+
         den = -np.inf
         for x1 in qam1:
             D = rx - C_sqrt*tx0[k]*h0[k] - I_sqrt*x1*h1[k]
             den = max_star(den, -abs(D)**2/P_noise)
-            
+
         MI1_0 += num - den
         k += bw
 
@@ -194,10 +194,10 @@ def gMI1_0(MIs, tx0, tx1, noise, h0, h1, C_Ns_dB, C_Is_dB, rho_dB):
     if tidx == 0:
         for i in range(1,bw):
             MI1_0 += shmem[i]
-        MIs[bidy, bidx] = {ldM1} + MI1_0/N_cells/math.log(2.0)
+        MIs[bidx, bidy] = {ldM1} + MI1_0/N_cells/math.log(2.0)
 '''
 
-sMI0_1='''
+sMI0_1 = '''
 cqam0 = np.array({sqam0})
 cqam1 = np.array({sqam1})
 
@@ -205,23 +205,23 @@ cqam1 = np.array({sqam1})
 def gMI0_1(MIs, tx0, tx1, noise, h0, h1, C_Ns_dB, C_Is_dB, rho_dB):
     qam0 = cuda.const.array_like(cqam0)
     qam1 = cuda.const.array_like(cqam1)
-    
+
     tidx = cuda.threadIdx.x
-    bw   = cuda.blockDim.x    
+    bw   = cuda.blockDim.x
     bidx = cuda.blockIdx.x
     bidy = cuda.blockIdx.y
-    
-    C_I = 10.**(C_Is_dB[bidy]/10.)
-    C_N = 10.**(C_Ns_dB[bidx]/10.)
+
+    C_I = 10.**(C_Is_dB[bidx]/10.)
+    C_N = 10.**(C_Ns_dB[bidy]/10.)
     rho = 10.**(rho_dB/10)
 
     Cp_sqrt  = math.sqrt(2.*rho/(1.+rho))
     Cpp_sqrt = math.sqrt(2./(1.+rho))
     Ip_sqrt  = math.sqrt(2./(1.+rho)/C_I)
     Ipp_sqrt = math.sqrt(2.*rho/(1.+rho)/C_I)
-    
+
     P_noise = 1./C_N
-    
+
     N_cells = len(tx0)
     MI0_1 = 0.
     k = tidx
@@ -232,17 +232,17 @@ def gMI0_1(MIs, tx0, tx1, noise, h0, h1, C_Ns_dB, C_Is_dB, rho_dB):
         else:
             C_sqrt = Cpp_sqrt
             I_sqrt = Ipp_sqrt
-        
+
         rx = C_sqrt*tx0[k]*h0[k] + I_sqrt*tx1[k]*h1[k] + noise[k]*math.sqrt(P_noise)
-        
+
         D = rx - C_sqrt*tx0[k]*h0[k] - I_sqrt*tx1[k]*h1[k]
         num = -abs(D)**2/P_noise
-        
+
         den = -np.inf
         for x0 in qam0:
             D = rx - C_sqrt*x0*h0[k] - I_sqrt*tx1[k]*h1[k]
             den = max_star(den, -abs(D)**2/P_noise)
-            
+
         MI0_1 += num - den
         k += bw
 
@@ -253,22 +253,22 @@ def gMI0_1(MIs, tx0, tx1, noise, h0, h1, C_Ns_dB, C_Is_dB, rho_dB):
     if tidx == 0:
         for i in range(1,bw):
             MI0_1 += shmem[i]
-        MIs[bidy, bidx] = {ldM0} + MI0_1/N_cells/math.log(2.0)
+        MIs[bidx, bidy] = {ldM0} + MI0_1/N_cells/math.log(2.0)
 '''
 
 @cuda.jit
 def gMI_sum(MIs_sum, MI0s, MI1_0s, MI1s, MI0_1s):
     bidx = cuda.blockIdx.x
     bidy = cuda.blockIdx.y
-    MIs_sum[bidy, bidx] = 0.5*(MI0s[bidy, bidx] + MI1_0s[bidy, bidx] + MI1s[bidy, bidx] + MI0_1s[bidy, bidx])
+    MIs_sum[bidx, bidy] = 0.5*(MI0s[bidx, bidy] + MI1_0s[bidx, bidy] + MI1s[bidx, bidy] + MI0_1s[bidx, bidy])
 
 
 @cuda.jit
 def gMI_max_min(Rs, MIs_sum, MI0s, MI0_1s):
     bidx = cuda.blockIdx.x
     bidy = cuda.blockIdx.y
-    R = min((0.5*MIs_sum[bidy, bidx], MI0_1s[bidy, bidx]))
-    Rs[bidy, bidx] = max((R, MI0s[bidy, bidx]))
+    R = min((0.5*MIs_sum[bidx, bidy], MI0_1s[bidx, bidy]))
+    Rs[bidx, bidy] = max((R, MI0s[bidx, bidy]))
 
 
 class MI_SP1p_rs_ofdm():
@@ -281,30 +281,29 @@ class MI_SP1p_rs_ofdm():
         self.N_threads = N_threads
         self.update()
 
-        s = sMI0.format(sqam0=sqam0, sqam1=sqam1, 
+        s = sMI0.format(sqam0=sqam0, sqam1=sqam1,
                         M0=M0, ldM0=int(np.log2(M0)),
                         M1=M0, ldM1=int(np.log2(M1)),
                         N_threads=N_threads)
         exec(s, globals())
 
-        s = sMI1.format(sqam0=sqam0, sqam1=sqam1, 
+        s = sMI1.format(sqam0=sqam0, sqam1=sqam1,
                         M0=M0, ldM0=int(np.log2(M0)),
                         M1=M1, ldM1=int(np.log2(M1)),
                         N_threads=N_threads)
         exec(s, globals())
 
-        s = sMI1_0.format(sqam0=sqam0, sqam1=sqam1, 
+        s = sMI1_0.format(sqam0=sqam0, sqam1=sqam1,
                           M0=M0, ldM0=int(np.log2(M0)),
                           M1=M1, ldM1=int(np.log2(M1)),
                           N_threads=N_threads)
         exec(s, globals())
 
-        s = sMI0_1.format(sqam0=sqam0, sqam1=sqam1, 
+        s = sMI0_1.format(sqam0=sqam0, sqam1=sqam1,
                           M0=M0, ldM0=int(np.log2(M0)),
                           M1=M1, ldM1=int(np.log2(M1)),
                           N_threads=N_threads)
         exec(s, globals())
-       
 
     def update(self):
         tx0, bits0 = make_cells(self.qam0, self.N_cells)
@@ -323,7 +322,7 @@ class MI_SP1p_rs_ofdm():
         self.C_Is_dB = C_Is_dB
         self.C_Ns_dB = C_Ns_dB
         self.rho_dB = rho_dB
-        
+
         self.MI0s = np.zeros((len(C_Is_dB), len(C_Ns_dB)), dtype=np.float32)
         gMI0[(len(C_Is_dB), len(C_Ns_dB)),self.N_threads](self.MI0s, self.tx0, self.tx1,
                                                           self.noise,
@@ -341,7 +340,7 @@ class MI_SP1p_rs_ofdm():
                                                             self.noise,
                                                             h0, h1,
                                                             C_Ns_dB, C_Is_dB, rho_dB)
-        
+
         self.MI0_1s = np.zeros((len(C_Is_dB), len(C_Ns_dB)), dtype=np.float32)
         gMI0_1[(len(C_Is_dB), len(C_Ns_dB)),self.N_threads](self.MI0_1s, self.tx0, self.tx1,
                                                             self.noise,
@@ -354,7 +353,6 @@ class MI_SP1p_rs_ofdm():
 
         self.Rs = np.zeros((len(C_Is_dB), len(C_Ns_dB)), dtype=np.float32)
         gMI_max_min[(len(C_Is_dB), len(C_Ns_dB)),1](self.Rs, self.MIs_sum, self.MI0s, self.MI0_1s)
-
 
     def _get_rates(self, identifier):
         '''
@@ -371,7 +369,7 @@ class MI_SP1p_rs_ofdm():
         elif identifier == 'MI1_0':
             MIs = self.MI1_0s
         return MIs
-    
+
     def imshow(self, ax, identifier):
         MIs = self._get_rates(identifier)
         extent = [self.C_Ns_dB[0], self.C_Ns_dB[-1], self.C_Is_dB[-1], self.C_Is_dB[0]]
@@ -386,3 +384,56 @@ class MI_SP1p_rs_ofdm():
         h = ax.contour(self.C_Ns_dB, self.C_Is_dB, MIs, [rate], colors=color, linewidths=2)
         return h
 
+
+if __name__ == '__main__':
+    M0 = 4
+    M1 = 4
+    N_cells = 20000
+    N_threads = 256
+    mi = MI_SP1p_rs_ofdm(M0, M1, N_cells, N_threads)
+
+    if 0:
+        C_Is_dB = np.linspace(20., -20., 21)
+        C_Ns_dB = np.linspace(0., 20., 31)
+        rhos_dB = [0, 3, 6, 10, 20, 30]
+        colors = ['b','g','r','m','orange','cyan','black', 'b', 'g', 'r']
+        Rs = []
+        for rho_dB in rhos_dB:
+            mi.compute_MIs(C_Is_dB, C_Ns_dB, rho_dB)
+            Rs.append(mi._get_rates('R'))
+
+
+        #extent=[C_Ns_dB[0],C_Ns_dB[-1],C_Is_dB[-1],C_Is_dB[1]]
+        #h = ax.imshow(Rs,extent=extent)
+        #plt.colorbar(h)
+        f, ax = plt.subplots()
+        for r, R in enumerate(Rs):
+            ax.contour(C_Ns_dB, C_Is_dB, R, levels=[1.0], colors=colors[r])
+        ax.grid()
+        plt.show()
+    elif 1:
+        C_Is_dB = np.array([-10.])
+        C_Ns_dB = np.linspace(-10., 20., 31)
+        Rs = []
+        for rho_dB in [0.,10.,20.,30.,40,50]:
+            mi.compute_MIs(C_Is_dB, C_Ns_dB, rho_dB)
+            Rs.append(mi._get_rates('MI0_1')[0])
+
+        f, ax = plt.subplots()
+        colors = ['b','g','r','m','orange','cyan','black', 'b', 'g', 'r']
+        for r, R in enumerate(Rs):
+            ax.plot(C_Ns_dB, R, colors[r])
+        ax.plot(C_Ns_dB,[1.]*len(C_Ns_dB))
+        ax.plot(C_Ns_dB,[1.067]*len(C_Ns_dB))
+        plt.show()
+    else:
+        rho_dB = 0.
+        C_Ns_dB = np.linspace(-10., 0., 21)
+        C_Is_dB = np.linspace(-20., 20., 21)
+        mi.compute_MIs(C_Is_dB, C_Ns_dB, rho_dB)
+        Rs = mi._get_rates('R')
+
+        f, ax = plt.subplots()
+        ax.plot(C_Ns_dB, Rs[0], 'bo-')
+        ax.grid()
+        plt.show()
