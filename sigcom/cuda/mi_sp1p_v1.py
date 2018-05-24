@@ -388,27 +388,38 @@ class MI_SP1p_rs_ofdm():
 if __name__ == '__main__':
     M0 = 4
     M1 = 4
-    N_cells = 20000
+    N_cells = 32400
     N_threads = 256
     mi = MI_SP1p_rs_ofdm(M0, M1, N_cells, N_threads)
 
-    if 0:
-        C_Is_dB = np.linspace(20., -20., 21)
-        C_Ns_dB = np.linspace(0., 20., 31)
-        rhos_dB = [0, 3, 6, 10, 20, 30]
-        colors = ['b','g','r','m','orange','cyan','black', 'b', 'g', 'r']
+    if 1:
+        C_Is_dB = np.linspace(20., -20., 31)
+        C_Ns_dB = np.linspace(0., 6., 31)
+        rhos_dB = [0, 3, 6, 10]
+        target_rate = 2*8/15
+        colors = ['b','r','g','m','orange','cyan','black', 'b', 'g', 'r']
         Rs = []
         for rho_dB in rhos_dB:
             mi.compute_MIs(C_Is_dB, C_Ns_dB, rho_dB)
             Rs.append(mi._get_rates('R'))
 
-
         #extent=[C_Ns_dB[0],C_Ns_dB[-1],C_Is_dB[-1],C_Is_dB[1]]
         #h = ax.imshow(Rs,extent=extent)
         #plt.colorbar(h)
+
+        proxy = []
         f, ax = plt.subplots()
         for r, R in enumerate(Rs):
-            ax.contour(C_Ns_dB, C_Is_dB, R, levels=[1.0], colors=colors[r])
+            ax.contour(C_Ns_dB, C_Is_dB, R, levels=[target_rate], colors=colors[r])
+            proxy.append(plt.Rectangle((0,0),1,1,color=colors[r]))
+        ax.plot([2.75]*2,[C_Is_dB[0],C_Is_dB[-1]], color='orange')
+        proxy.append(plt.Rectangle((0,0),1,1,color='orange'))
+        ax.plot([2.29]*2,[C_Is_dB[0],C_Is_dB[-1]], color='black')
+        proxy.append(plt.Rectangle((0,0),1,1,color='black'))
+        plt.legend(proxy, ['rho=0dB','3dB','6dB','10dB','FDM (16QAM)','FDM (Gaussian)'])
+        ax.set_xlabel('C/N in dB')
+        ax.set_ylabel('C/I in dB')
+        ax.set_title('{:.3f}b/s/Hz'.format(target_rate))
         ax.grid()
         plt.show()
     elif 1:
